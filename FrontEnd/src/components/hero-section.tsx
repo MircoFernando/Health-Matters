@@ -1,8 +1,9 @@
 import React, { useRef } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { TextureLoader, Shape, ExtrudeGeometry } from 'three';
+import type * as THREE from 'three';
 
-const Box = ({ position, rotation }) => {
+const Box = ({ position, rotation }: { position: [number, number, number]; rotation: [number, number, number] }) => {
     const shape = new Shape();
     const angleStep = Math.PI * 0.5;
     const radius = 1;
@@ -63,7 +64,7 @@ const Box = ({ position, rotation }) => {
 };
 
 const AnimatedBoxes = () => {
-    const groupRef = useRef();
+    const groupRef = useRef<THREE.Group>(null);
 
     useFrame((state, delta) => {
         if (groupRef.current) {
@@ -72,12 +73,12 @@ const AnimatedBoxes = () => {
     });
 
     const boxes = Array.from({ length: 50 }, (_, index) => ({
-        position: [(index - 25) * 0.75, 0, 0],
+        position: [(index - 25) * 0.75, 0, 0] as [number, number, number],
         rotation: [
             (index - 10) * 0.1,
             Math.PI / 2,
             0
-        ],
+        ] as [number, number, number],
         id: index
     }));
 
@@ -95,7 +96,7 @@ const AnimatedBoxes = () => {
 };
 
 export const Scene = () => {
-    const [cameraPosition, setCameraPosition] = React.useState([5, 5, 20]);
+    const [cameraPosition, setCameraPosition] = React.useState<[number, number, number]>([5, 5, 20]);
 
     return (
         <div className="w-full h-full z-0">
