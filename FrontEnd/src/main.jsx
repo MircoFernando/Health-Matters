@@ -55,7 +55,7 @@ createRoot(document.getElementById('root')).render(
           <Route element={<MainLayout />}>
           <Route path='/' element={<LandingPage />} />
           </Route>
-          <Route path='/dashboard' element={<ProtectedLayout />} />
+          <Route element={<ProtectedLayout />}>
           // Admin Dashboard Routes
           <Route path='/admin/dashboard' element={ <AdminDashboardLayout /> }>
             <Route index element={ <TestOverview /> } />
@@ -87,6 +87,7 @@ createRoot(document.getElementById('root')).render(
             <Route path='insights' element={ <ManagerTestInsights /> } />
             <Route path='budget' element={ <ManagerTestBudget /> } />
             <Route path='profile' element={ <ManagerTestProfile /> } />
+          </Route>
           </Route>
         </Route>
       </Routes>
