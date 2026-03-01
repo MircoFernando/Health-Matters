@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router"; // 1. Import useNavigate
 import "./index.css";
 import RootLayout from "@/layout/root-layout.jsx";
 import { LandingPage } from "./pages/Landing-page/LandingPage";
@@ -46,68 +46,74 @@ if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk publishable key in environment variables");
 }
 
+// 2. Create this wrapper component
+const ClerkWithRoutes = () => {
+  const navigate = useNavigate();
+
+  return (
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      // 3. Connect Clerk to React Router here
+      routerPush={(to) => navigate(to)}
+      routerReplace={(to) => navigate(to, { replace: true })}
+      // 4. Force redirects to root 
+      signInForceRedirectUrl="/"
+      signUpForceRedirectUrl="/"
+    >
+      <Routes>
+        <Route element={<RootLayout />}>
+          <Route path="/sign-in" element={<SignInPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<LandingPage />} />
+          </Route>
+          <Route element={<ProtectedLayout />}>
+            {/* Admin Dashboard Routes */}
+            <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
+              <Route index element={<TestOverview />} />
+              <Route path="analytics" element={<TestAnalytics />} />
+              <Route path="services" element={<TestServices />} />
+              <Route path="referrals" element={<TestFeature />} />
+              <Route path="diary" element={<TestDiary />} />
+              <Route path="users" element={<TestUsers />} />
+              <Route path="settings" element={<TestSettings />} />
+            </Route>
+            {/* Employee Dashboard Routes */}
+            <Route path="/employee/dashboard" element={<EmployeeDashboardLayout />}>
+              <Route index element={<EmployeeTestOverview />} />
+              <Route path="tasks" element={<EmployeeTestTasks />} />
+              <Route path="reports" element={<EmployeeTestReports />} />
+              <Route path="schedule" element={<EmployeeTestSchedule />} />
+              <Route path="profile" element={<EmployeeTestProfile />} />
+            </Route>
+            {/* Practitioner Dashboard Routes */}
+            <Route path="/practitioner/dashboard" element={<PractitionerDashboardLayout />}>
+              <Route index element={<PractitionerTestOverview />} />
+              <Route path="patients" element={<PractitionerTestPatients />} />
+              <Route path="reviews" element={<PractitionerTestReviews />} />
+              <Route path="appointments" element={<PractitionerTestAppointments />} />
+              <Route path="profile" element={<PractitionerTestProfile />} />
+            </Route>
+            {/* Manager Dashboard Routes */}
+            <Route path="/manager/dashboard" element={<ManagerDashboardLayout />}>
+              <Route index element={<ManagerTestOverview />} />
+              <Route path="team" element={<ManagerTestTeam />} />
+              <Route path="insights" element={<ManagerTestInsights />} />
+              <Route path="budget" element={<ManagerTestBudget />} />
+              <Route path="profile" element={<ManagerTestProfile />} />
+            </Route>
+          </Route>
+        </Route>
+      </Routes>
+    </ClerkProvider>
+  );
+};
+
+// 5. Render BrowserRouter as the top-level parent
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <Routes>
-          <Route element={<RootLayout />}>
-            <Route path="/sign-in" element={<SignInPage />} />
-            <Route path="/sign-up" element={<SignUpPage />} />
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<LandingPage />} />
-            </Route>
-            <Route element={<ProtectedLayout />}>
-              // Admin Dashboard Routes
-              <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
-                <Route index element={<TestOverview />} />
-                <Route path="analytics" element={<TestAnalytics />} />
-                <Route path="services" element={<TestServices />} />
-                <Route path="referrals" element={<TestFeature />} />
-                <Route path="diary" element={<TestDiary />} />
-                <Route path="users" element={<TestUsers />} />
-                <Route path="settings" element={<TestSettings />} />
-              </Route>
-              // Employee Dashboard Routes
-              <Route
-                path="/employee/dashboard"
-                element={<EmployeeDashboardLayout />}
-              >
-                <Route index element={<EmployeeTestOverview />} />
-                <Route path="tasks" element={<EmployeeTestTasks />} />
-                <Route path="reports" element={<EmployeeTestReports />} />
-                <Route path="schedule" element={<EmployeeTestSchedule />} />
-                <Route path="profile" element={<EmployeeTestProfile />} />
-              </Route>
-              // Practitioner Dashboard Routes
-              <Route
-                path="/practitioner/dashboard"
-                element={<PractitionerDashboardLayout />}
-              >
-                <Route index element={<PractitionerTestOverview />} />
-                <Route path="patients" element={<PractitionerTestPatients />} />
-                <Route path="reviews" element={<PractitionerTestReviews />} />
-                <Route
-                  path="appointments"
-                  element={<PractitionerTestAppointments />}
-                />
-                <Route path="profile" element={<PractitionerTestProfile />} />
-              </Route>
-              // Manager Dashboard Routes
-              <Route
-                path="/manager/dashboard"
-                element={<ManagerDashboardLayout />}
-              >
-                <Route index element={<ManagerTestOverview />} />
-                <Route path="team" element={<ManagerTestTeam />} />
-                <Route path="insights" element={<ManagerTestInsights />} />
-                <Route path="budget" element={<ManagerTestBudget />} />
-                <Route path="profile" element={<ManagerTestProfile />} />
-              </Route>
-            </Route>
-          </Route>
-        </Routes>
-      </ClerkProvider>
+      <ClerkWithRoutes />
     </BrowserRouter>
   </StrictMode>
 );
