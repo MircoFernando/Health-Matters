@@ -1,0 +1,2 @@
+//Ideally we'll need to seperate the code of the referral management page into a separate fille,
+//Currently everything is in the dashboard layout file, but we can move it to a separate file and import it here for better modularity and readability.
