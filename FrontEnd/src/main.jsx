@@ -7,6 +7,7 @@ import { LandingPage } from "./pages/Landing-page/LandingPage";
 // Import Admin Dashboard
 import AdminDashboardLayout from "./pages/DashBoards/AdminDashboard/admin-dashboard-layout.jsx";
 import { TestFeature } from "./pages/DashBoards/AdminDashboard/test.jsx";
+import { DebugAPI } from "./pages/DashBoards/AdminDashboard/debug-api.jsx";
 import { TestOverview } from "./pages/DashBoards/AdminDashboard/test-overview.jsx";
 import { TestAnalytics } from "./pages/DashBoards/AdminDashboard/test-analytics.jsx";
 import { TestServices } from "./pages/DashBoards/AdminDashboard/test-services.jsx";
@@ -35,10 +36,12 @@ import { ManagerTestInsights } from "./pages/DashBoards/ManagerDashboard/test-in
 import { ManagerTestProfile } from "./pages/DashBoards/ManagerDashboard/test-profile.jsx";
 import { ManagerTestBudget } from "./pages/DashBoards/ManagerDashboard/test-budget.jsx";
 import { ClerkProvider } from "@clerk/clerk-react";
+import { Provider } from "react-redux";
 import SignInPage from "./pages/Login/sign-in.jsx";
 import SignUpPage from "./pages/Login/sign-up.jsx";
 import MainLayout from "./layout/main-layout.jsx";
 import { ProtectedLayout } from "./layout/ProtectedLayout.jsx";
+import { store } from "./store";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -74,6 +77,7 @@ const ClerkWithRoutes = () => {
               <Route path="analytics" element={<TestAnalytics />} />
               <Route path="services" element={<TestServices />} />
               <Route path="referrals" element={<TestFeature />} />
+              <Route path="debug" element={<DebugAPI />} />
               <Route path="diary" element={<TestDiary />} />
               <Route path="users" element={<TestUsers />} />
               <Route path="settings" element={<TestSettings />} />
@@ -112,8 +116,10 @@ const ClerkWithRoutes = () => {
 // 5. Render BrowserRouter as the top-level parent
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <ClerkWithRoutes />
-    </BrowserRouter>
+    <Provider store={store}>
+      <BrowserRouter>
+        <ClerkWithRoutes />
+      </BrowserRouter>
+    </Provider>
   </StrictMode>
 );

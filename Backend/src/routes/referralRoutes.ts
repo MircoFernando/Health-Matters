@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  assignReferralById,
   createReferral,
   deleteReferralByPatientId,
   getAllReferrals,
@@ -27,5 +28,8 @@ ReferralRouter.put('/patient/:patientId', updateReferralByPatientId);
 
 // DELETE /api/referrals/patient/:patientId - Delete referrals by patientId
 ReferralRouter.delete('/patient/:patientId', deleteReferralByPatientId);
+
+// PUT /api/referrals/:referralId/assign - Assign practitioner to one referral
+ReferralRouter.put('/:referralId/assign', assignReferralById);
 
 export default ReferralRouter;

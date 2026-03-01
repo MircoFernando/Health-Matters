@@ -12,6 +12,10 @@ export const practitionerIdParamsSchema = z.object({
   practitionerId: z.string().trim().min(1, 'practitionerId is required'),
 });
 
+export const referralIdParamsSchema = z.object({
+  referralId: z.string().trim().min(1, 'referralId is required'),
+});
+
 export const createReferralBodySchema = z.object({
   patientClerkUserId: z.string().trim().min(1, 'patientClerkUserId is required'),
   submittedByClerkUserId: z.string().trim().optional(),
@@ -33,3 +37,7 @@ export const updateReferralBodySchema = createReferralBodySchema
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field is required for update',
   });
+
+export const assignReferralBodySchema = z.object({
+  practitionerClerkUserId: z.string().trim().min(1, 'practitionerClerkUserId is required'),
+});

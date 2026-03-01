@@ -2,12 +2,15 @@ import { NextFunction, Request, Response } from 'express';
 import { Referral } from '../models/Referral';
 import { ZodError } from 'zod';
 import {
+	assignReferralBodySchema,
 	createReferralBodySchema,
 	patientIdParamsSchema,
 	practitionerIdParamsSchema,
+	referralIdParamsSchema,
 	updateReferralBodySchema,
 } from '../Dtos/referral.dto';
 import { ValidationError, NotFoundError } from '../errors/errors';
+import { getAuth } from '@clerk/express';
 
 const formatValidationErrors = (error: ZodError) =>
 	error.issues.map((issue) => ({
@@ -17,9 +20,12 @@ const formatValidationErrors = (error: ZodError) =>
 
 export const getAllReferrals = async (req: Request, res: Response, next: NextFunction) => {
 	try {
+		console.log('🔵 GET /api/referrals - Fetching all referrals');
 		const referrals = await Referral.find().sort({ createdAt: -1 });
+		console.log(`✅ Found ${referrals.length} referrals`);
 		res.status(200).json(referrals);
 	} catch (error) {
+		console.error('❌ Error in getAllReferrals:', error);
 		next(error);
 	}
 };
@@ -142,6 +148,45 @@ export const deleteReferralByPatientId = async (
 			message: 'Referrals deleted successfully',
 			deletedCount: deleteResult.deletedCount,
 		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const assignReferralById = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const parsedParams = referralIdParamsSchema.safeParse(req.params);
+		const parsedBody = assignReferralBodySchema.safeParse(req.body);
+		const auth = getAuth(req);
+
+		if (!parsedParams.success) {
+			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedParams.error)));
+		}
+
+		if (!parsedBody.success) {
+			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedBody.error)));
+		}
+
+		const { referralId } = parsedParams.data;
+		const { practitionerClerkUserId } = parsedBody.data;
+
+		const updatedReferral = await Referral.findByIdAndUpdate(
+			referralId,
+			{
+				$set: {
+					practitionerClerkUserId,
+					assignedDate: new Date(),
+					assignedbyClerkUserId: auth.userId || undefined,
+				},
+			},
+			{ new: true, runValidators: true }
+		);
+
+		if (!updatedReferral) {
+			throw new NotFoundError('Referral not found');
+		}
+
+		res.status(200).json(updatedReferral);
 	} catch (error) {
 		next(error);
 	}
