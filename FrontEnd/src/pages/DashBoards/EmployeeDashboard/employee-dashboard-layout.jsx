@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet, useLocation } from "react-router";
+import { Outlet, useLocation, Link } from "react-router";
 import {
   Home,
   ClipboardList,
@@ -7,6 +7,8 @@ import {
   CalendarDays,
   User,
   ChevronsUpDown,
+  LogOut,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -26,30 +28,36 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 const items = [
   {
-    title: "Overview",
+    title: "Dashboard",
     url: "/employee/dashboard",
     icon: Home,
   },
   {
-    title: "Tasks",
-    url: "/employee/dashboard/tasks",
+    title: "Submit Referral",
+    url: "/employee/dashboard/submit-referral",
     icon: ClipboardList,
   },
   {
-    title: "Reports",
-    url: "/employee/dashboard/reports",
-    icon: BarChart3,
-  },
-  {
-    title: "Schedule",
-    url: "/employee/dashboard/schedule",
-    icon: CalendarDays,
-  },
-  {
-    title: "Profile",
+    title: "My Profile",
     url: "/employee/dashboard/profile",
     icon: User,
   },
+  {
+    title: "Notifications",
+    url: "/employee/dashboard/notifications",
+    icon: CalendarDays,
+  },
+  {
+    title: "Help & Advice",
+    url: "/employee/dashboard/help",
+    icon: User,
+  },
+  {
+    title: "Settings",
+    url: "/employee/dashboard/settings",
+    icon: Settings,
+  },
+  // logout removed per request
 ];
 
 const EmployeeDashboardLayout = () => {
@@ -72,7 +80,7 @@ const EmployeeDashboardLayout = () => {
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {items.map((item) => {
-                      const isActive = location.pathname === item.url;
+                      const isActive = location.pathname.startsWith(item.url);
                       return (
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton
@@ -88,10 +96,10 @@ const EmployeeDashboardLayout = () => {
                               }
                             `}
                           >
-                            <a href={item.url} className="flex items-center gap-3">
+                            <Link to={item.url} className="flex items-center gap-3">
                               <item.icon className="h-5 w-5" />
                               <span className="font-medium">{item.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       );
@@ -146,3 +154,5 @@ const EmployeeDashboardLayout = () => {
 };
 
 export default EmployeeDashboardLayout;
+
+
