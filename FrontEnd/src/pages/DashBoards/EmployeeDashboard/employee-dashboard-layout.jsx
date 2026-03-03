@@ -53,8 +53,8 @@ const items = [
     icon: User,
   },
   {
-    title: "Settings",
-    url: "/employee/dashboard/settings",
+    title: "Accessibility",
+    url: "/employee/dashboard/accessibility",
     icon: Settings,
   },
 ];
@@ -129,7 +129,7 @@ const EmployeeDashboardLayout = () => {
           </Sidebar>
 
           <main className="flex flex-1 flex-col overflow-hidden">
-            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-emerald-200 bg-white px-6 shadow-sm">
+            {/* <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-emerald-200 bg-white px-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="text-emerald-900 hover:bg-emerald-50 hover:text-emerald-700" />
                 <h2 className="text-lg font-semibold text-slate-800">
@@ -140,7 +140,7 @@ const EmployeeDashboardLayout = () => {
                 <span className="h-2 w-2 rounded-full bg-green-500"></span>
                 <span className="text-sm font-medium text-slate-600">Online</span>
               </div>
-            </header>
+            </header> */}
 
             <div className="flex-1 overflow-auto p-6">
               <Outlet />

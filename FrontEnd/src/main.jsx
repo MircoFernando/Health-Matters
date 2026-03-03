@@ -18,12 +18,13 @@ import { TestSettings } from "./pages/DashBoards/AdminDashboard/test-settings.js
 import EmployeeDashboardLayout from "./pages/DashBoards/EmployeeDashboard/employee-dashboard-layout.jsx";
 import { EmployeeOverview } from "./pages/DashBoards/EmployeeDashboard/EmployeeOverview.jsx";
 import { EmployeeProfile } from "./pages/DashBoards/EmployeeDashboard/EmployeeProfile.jsx";
+import { EmployeeProfileEdit } from "./pages/DashBoards/EmployeeDashboard/EmployeeProfileEdit.jsx";
 
 // new pages for employee dashboard
 import { SubmitReferral } from "./pages/DashBoards/EmployeeDashboard/SubmitReferral.jsx";
 import { Notifications } from "./pages/DashBoards/EmployeeDashboard/Notifications.jsx";
 import { HelpAndAdvice } from "./pages/DashBoards/EmployeeDashboard/HelpAndAdvice.jsx";
-import { EmployeeSettings } from "./pages/DashBoards/EmployeeDashboard/EmployeeSettings.jsx";
+import { Accessibility } from "./pages/DashBoards/EmployeeDashboard/Accessibility.jsx";
 
 // Import Practitioner Dashboard
 import PractitionerDashboardLayout from "./pages/DashBoards/PractitionerDashboard/practitioner-dashboard-layout.jsx";
@@ -90,10 +91,11 @@ const ClerkWithRoutes = () => {
             <Route path="/employee/dashboard" element={<EmployeeDashboardLayout />}>
               <Route index element={<EmployeeOverview />} />
               <Route path="profile" element={<EmployeeProfile />} />
+              <Route path="/employee/dashboard/profile/edit" element={<EmployeeProfileEdit />} />
               <Route path="submit-referral" element={<SubmitReferral />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="help" element={<HelpAndAdvice />} />
-              <Route path="settings" element={<EmployeeSettings />} />
+              <Route path="accessibility" element={<Accessibility />} />
             </Route>
             {/* Practitioner Dashboard Routes */}
             <Route path="/practitioner/dashboard" element={<PractitionerDashboardLayout />}>
