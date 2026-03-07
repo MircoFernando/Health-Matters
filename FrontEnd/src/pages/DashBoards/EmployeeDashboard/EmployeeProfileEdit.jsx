@@ -1,110 +1,132 @@
 import React from "react";
-import { User, Bell } from "lucide-react";
+import { User, Phone, ShieldAlert, Camera, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 export const EmployeeProfileEdit = () => {
   const navigate = useNavigate();
+  const userProfileImageUrl = "https://lh3.googleusercontent.com/a/your-google-profile-id";
+
+  // Reusable Edit Field Component
+  const EditField = ({ label, defaultValue, type = "text", fullWidth = false }) => (
+    <div className={fullWidth ? "md:col-span-2" : ""}>
+      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">
+        {label}
+      </label>
+      <input
+        type={type}
+        defaultValue={defaultValue}
+        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-[#064E3B] focus:border-transparent outline-none transition-all"
+      />
+    </div>
+  );
 
   return (
-    /* Matches your bg-[#F1F3F9] and font-sans (Arial) */
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto p-6 space-y-8 min-h-screen">
       
-      {/* --- TOP HEADER BAR --- */}
-      <header>
-        <h1 className="text-3xl font-bold text-slate-900">My Profile</h1>
+      {/* --- HEADER --- */}
+      <header className="flex items-center gap-4">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors text-slate-600"
+        >
+          <ArrowLeft size={24} />
+        </button>
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Edit Profile</h1>
+          <p className="text-gray-500 text-sm">Update your information and save changes</p>
+        </div>
       </header>
 
-      <main className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 items-start">
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* --- LEFT COLUMN: PROFILE PIC & BUTTONS --- */}
-        <section className="w-full md:w-1/4 flex flex-col items-center">
-          <div className="w-32 h-32 rounded-full border border-gray-300 overflow-hidden flex items-center justify-center bg-white mb-4">
-        {/* Replace the src with your dynamic Google profile URL variable */}
-        <img 
-            src="https://lh3.googleusercontent.com/a/your-google-profile-id" 
-            alt="User Profile" 
-            className="w-full h-full object-cover"
-            onError={(e) => {
-            e.target.src = "https://ui-avatars.com/api/?name=User&background=emerald"; // Fallback if image fails
-            }}
-        />
-    </div>
-          
-          <div className="bg-[#E2E8F0] px-5 py-0.5 rounded-full text-[11px] font-bold text-gray-600 tracking-wide uppercase mb-8">
-            UserID 456
-          </div>
+        {/* --- LEFT COLUMN: AVATAR & ACTIONS --- */}
+        <section className="lg:col-span-4 space-y-6">
+          <div className="bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm flex flex-col items-center">
+            <div className="relative group">
+              <div className="w-40 h-40 rounded-[2.5rem] border-4 border-emerald-50 overflow-hidden bg-white shadow-md">
+                <img 
+                  src={userProfileImageUrl} 
+                  alt="User Profile" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = "https://ui-avatars.com/api/?name=John+De+Lavada&background=064E3B&color=fff";
+                  }}
+                />
+              </div>
+              
+            </div>
 
-          <div className="flex flex-col gap-3 w-full max-w-[160px]">
-            <button 
-              onClick={() => navigate(-1)}
-              className="bg-[#064E3B] text-white py-2 rounded-full text-sm font-bold shadow-md hover:bg-emerald-900 transition-colors"
-            >
-              Save Changes
-            </button>
-            <button 
-              onClick={() => navigate(-1)}
-              className="bg-white text-gray-800 border border-gray-400 py-2 rounded-full text-sm font-bold hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
+            <div className="mt-6 border border-gray-200 px-4 py-1 rounded-full text-[11px] font-bold text-gray-400 tracking-[0.2em] uppercase">
+              UserID 456
+            </div>
+
+            {/* Action Buttons inside the Card */}
+            <div className="flex flex-col gap-3 w-full mt-10">
+              <button 
+                onClick={() => navigate(-1)}
+                className="w-full bg-[#064E3B] text-white py-4 rounded-2xl text-sm font-bold shadow-lg shadow-emerald-900/20 hover:bg-emerald-800 transition-all hover:-translate-y-0.5"
+              >
+                Save Changes
+              </button>
+              <button 
+                onClick={() => navigate(-1)}
+                className="w-full bg-white text-slate-600 border border-gray-200 py-4 rounded-2xl text-sm font-bold hover:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </section>
 
-        {/* --- RIGHT COLUMN: FORM CARDS --- */}
-        <div className="flex-1 space-y-6 w-full">
+        {/* --- RIGHT COLUMN: FORM --- */}
+        <div className="lg:col-span-8 space-y-6">
           
           {/* PERSONAL INFORMATION */}
-          <div className="bg-white px-10 py-8 rounded-[40px] shadow-sm">
-            <h2 className="text-md font-bold text-gray-800 mb-6">Personal Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-              <div>
-                <label className="block text-sm mb-1 font-semibold text-gray-700">Full Name</label>
-                <input type="text" defaultValue="John De Lavada" className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-400 text-gray-600 bg-white" />
+          <section className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-emerald-50 rounded-lg text-[#064E3B]">
+                <User size={20} />
               </div>
-              <div>
-                <label className="block text-sm mb-1 font-semibold text-gray-700">Gender</label>
-                <input type="text" defaultValue="Male" className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-400 text-gray-600 bg-white" />
-              </div>
-              <div className="md:col-span-1">
-                <label className="block text-sm mb-1 font-semibold text-gray-700">Date of Birth</label>
-                <input type="text" defaultValue="2002-05-12" className="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-400 text-gray-600 bg-white" />
-              </div>
+              <h2 className="text-xl font-bold text-slate-800">Personal Information</h2>
             </div>
-          </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <EditField label="Full Name" defaultValue="John De Lavada" />
+              <EditField label="Gender" defaultValue="Male" />
+              <EditField label="Date of Birth" defaultValue="2002-05-12" />
+            </div>
+          </section>
 
           {/* CONTACT INFORMATION */}
-          <div className="bg-white px-10 py-8 rounded-[40px] shadow-sm">
-            <h2 className="text-md font-bold text-gray-800 mb-6">Contact Information</h2>
-            <div className="space-y-4 max-w-lg">
-              <div className="flex items-center">
-                <label className="w-36 text-sm font-semibold text-gray-700">Phone Number</label>
-                <input type="text" defaultValue="07586900" className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-400 text-gray-600 bg-white" />
+          <section className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-emerald-50 rounded-lg text-[#064E3B]">
+                <Phone size={20} />
               </div>
-              <div className="flex items-center">
-                <label className="w-36 text-sm font-semibold text-gray-700">Email</label>
-                <input type="email" defaultValue="user@gmail.com" className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-400 text-gray-600 bg-white" />
-              </div>
-              <div className="flex items-center">
-                <label className="w-36 text-sm font-semibold text-gray-700">Address</label>
-                <input type="text" defaultValue="7th RD, Colombo" className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-400 text-gray-600 bg-white" />
-              </div>
+              <h2 className="text-xl font-bold text-slate-800">Contact Information</h2>
             </div>
-          </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <EditField label="Phone Number" defaultValue="07586900" />
+              <EditField label="Email" defaultValue="user@gmail.com" type="email" />
+              <EditField label="Address" defaultValue="7th RD, Colombo" fullWidth={true} />
+            </div>
+          </section>
 
           {/* EMERGENCY CONTACT */}
-          <div className="bg-white px-10 py-8 rounded-[40px] shadow-sm">
-            <h2 className="text-md font-bold text-gray-800 mb-6">Emergency Contact</h2>
-            <div className="space-y-4 max-w-lg">
-              <div className="flex items-center">
-                <label className="w-36 text-sm font-semibold text-gray-700">Name</label>
-                <input type="text" defaultValue="Jasse De Lavada" className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-400 text-gray-600 bg-white" />
+          <section className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-red-50 rounded-lg text-red-600">
+                <ShieldAlert size={20} />
               </div>
-              <div className="flex items-center">
-                <label className="w-36 text-sm font-semibold text-gray-700">Phone Number</label>
-                <input type="text" defaultValue="074XX4578" className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm outline-none focus:border-indigo-400 text-gray-600 bg-white" />
-              </div>
+              <h2 className="text-xl font-bold text-slate-800">Emergency Contact</h2>
             </div>
-          </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <EditField label="Contact Name" defaultValue="Jasse De Lavada" />
+              <EditField label="Phone Number" defaultValue="074XX4578" />
+            </div>
+          </section>
 
         </div>
       </main>

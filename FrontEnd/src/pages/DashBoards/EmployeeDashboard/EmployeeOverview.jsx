@@ -4,7 +4,7 @@ import {
   CalendarDays, 
   BookOpen, 
   PlusCircle, 
-  TrendingDown,
+  TrendingUp,
   User 
 } from "lucide-react";
 import { Link } from "react-router";
@@ -19,8 +19,42 @@ export const EmployeeOverview = () => {
       </div>
 
       {/* 2. Top Metric Boxes */}
-      {/* METHMIS TEAMS CODE HERE FOR THE DASHBOARD - THE 4 BOXES */}
-      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard 
+          title="Wait Time" 
+          value="4 days" 
+          subtext="Dr. Michell Micheal" 
+          icon={Clock} 
+          iconBg="bg-blue-50" 
+          iconColor="text-blue-600" 
+        />
+        <StatCard 
+          title="Total Referrals" 
+          value="7" 
+          subtext="2 pending review" 
+          icon={FileText} 
+          iconBg="bg-amber-50" 
+          iconColor="text-amber-600"
+          trend="+2 this month"
+        />
+        <StatCard 
+          title="Upcoming Appointments" 
+          value="5" 
+          subtext="Next in 4 days" 
+          icon={CalendarDays} 
+          iconBg="bg-purple-50" 
+          iconColor="text-purple-600" 
+        />
+        <StatCard 
+          title="Advice Sheets Accessed" 
+          value="3" 
+          subtext="This Month" 
+          icon={BookOpen} 
+          iconBg="bg-emerald-50" 
+          iconColor="text-emerald-600"
+          trend="+1 last week"
+        />
+      </div>
 
       {/* 3. Referral History Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden w-full">
@@ -52,7 +86,7 @@ export const EmployeeOverview = () => {
         </div>
       </div>
 
-      {/* 4. Patient History Timeline (Aligned to page) */}
+      {/* 4. Patient History Timeline */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden w-full">
         <div className="p-6 border-b border-slate-100">
           <h3 className="font-bold text-lg text-slate-800">Patient History Timeline</h3>
@@ -93,7 +127,28 @@ export const EmployeeOverview = () => {
 
 // --- Sub-components ---
 
-// METHMIS TEAMS - 4 BOXES COMPONENT HERE
+const StatCard = ({ title, value, subtext, icon: Icon, iconBg, iconColor, trend }) => (
+  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+    <div className="flex justify-between items-start mb-4">
+      <div>
+        <p className="text-sm font-medium text-slate-500">{title}</p>
+        <h3 className="text-2xl font-bold text-slate-900 mt-1">{value}</h3>
+      </div>
+      <div className={`p-2 rounded-lg ${iconBg}`}>
+        <Icon className={`h-5 w-5 ${iconColor}`} />
+      </div>
+    </div>
+    <div className="flex items-center gap-2">
+      {trend && (
+        <span className="flex items-center text-xs font-medium text-emerald-600">
+          <TrendingUp className="h-3 w-3 mr-1" />
+          {trend}
+        </span>
+      )}
+      <span className="text-xs text-slate-400">{subtext}</span>
+    </div>
+  </div>
+);
 
 const ReferralRow = ({ id, date, type, status }) => {
   const statusStyles = {
