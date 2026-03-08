@@ -1,3 +1,5 @@
+//practtioner-dashboard-layout.jsx
+
 import React from "react";
 import { Outlet, useLocation } from "react-router";
 import {
@@ -7,6 +9,7 @@ import {
   CalendarCheck,
   User,
   ChevronsUpDown,
+  File
 } from "lucide-react";
 import {
   Sidebar,
@@ -50,7 +53,13 @@ const items = [
     url: "/practitioner/dashboard/profile",
     icon: User,
   },
+  {
+    title: "Create Referral",
+    url: "/practitioner/dashboard/create_referral",
+    icon: File,
+  },
 ];
+
 
 const PractitionerDashboardLayout = () => {
   const { user } = useUser();
@@ -59,7 +68,7 @@ const PractitionerDashboardLayout = () => {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-amber-50">
+        <div className="flex min-h-screen w-full bg-blue-50">
           <Sidebar className="border-r border-blue-800 bg-blue-800 text-white">
             <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6">
               <span className="text-lg font-bold tracking-wide text-white">
@@ -83,8 +92,8 @@ const PractitionerDashboardLayout = () => {
                               mb-1 h-10 w-full rounded-md px-3 transition-colors
                               ${
                                 isActive
-                                  ? "bg-blue-200 text-white"
-                                  : "text-amber-100 hover:bg-blue-200 hover:text-white"
+                                  ? "bg-blue-100 text-black"
+                                  : "text-blue-100 hover:bg-blue-200 hover:text-white"
                               }
                             `}
                           >
@@ -122,9 +131,9 @@ const PractitionerDashboardLayout = () => {
           </Sidebar>
 
           <main className="flex flex-1 flex-col overflow-hidden">
-            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-amber-200 bg-white px-6 shadow-sm">
+            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-blue-200 bg-white px-6 shadow-sm">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="text-amber-900 hover:bg-amber-50 hover:text-amber-700" />
+                <SidebarTrigger className="bg-blue-700 text-white hover:bg-blue-800" />
                 <h2 className="text-lg font-semibold text-slate-800">
                   Dashboard
                 </h2>
