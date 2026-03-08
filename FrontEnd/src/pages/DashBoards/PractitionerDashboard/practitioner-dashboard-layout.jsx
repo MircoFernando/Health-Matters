@@ -1,3 +1,5 @@
+//practtioner-dashboard-layout.jsx
+
 import React from "react";
 import { Outlet, useLocation } from "react-router";
 import {
@@ -7,6 +9,7 @@ import {
   CalendarCheck,
   User,
   ChevronsUpDown,
+  File
 } from "lucide-react";
 import {
   Sidebar,
@@ -49,6 +52,11 @@ const items = [
     title: "Profile",
     url: "/practitioner/dashboard/profile",
     icon: User,
+  },
+  {
+    title: "Create Referral",
+    url: "/practitioner/dashboard/create_referral",
+    icon: File,
   },
 ];
 
