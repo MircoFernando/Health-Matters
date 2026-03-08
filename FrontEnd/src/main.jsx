@@ -33,6 +33,7 @@ import { PractitionerTestPatients } from "./pages/DashBoards/PractitionerDashboa
 import { PractitionerTestReviews } from "./pages/DashBoards/PractitionerDashboard/test-reviews.jsx";
 import { PractitionerTestProfile } from "./pages/DashBoards/PractitionerDashboard/test-profile.jsx";
 import { PractitionerTestAppointments } from "./pages/DashBoards/PractitionerDashboard/test-appointments.jsx";
+import { PractitionerTestCreateReferral } from './pages/DashBoards/PractitionerDashboard/test-create-referral.jsx';
 // Import Manager Dashboard
 import ManagerDashboardLayout from "./pages/DashBoards/ManagerDashboard/manager-dashboard-layout.jsx";
 import { ManagerOverview, ManagerReferralSubmission } from "./pages/DashBoards/ManagerDashboard/manager-dashboard-pages.jsx";
@@ -104,6 +105,7 @@ const ClerkWithRoutes = () => {
               <Route path="reviews" element={<PractitionerTestReviews />} />
               <Route path="appointments" element={<PractitionerTestAppointments />} />
               <Route path="profile" element={<PractitionerTestProfile />} />
+              <Route path='create_referral' element={ <PractitionerTestCreateReferral /> } />
             </Route>
             {/* Manager Dashboard Routes */}
             <Route path="/manager/dashboard" element={<ManagerDashboardLayout />}>
