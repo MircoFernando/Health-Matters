@@ -28,6 +28,26 @@ export const getAllUsers = async (req: Request, res: Response, next:NextFunction
   }
 }
 
+export const getUserByClerkId = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const auth = getAuth(req);
+
+		if (!auth.userId) {
+			throw new UnauthorizedError('Authentication required');
+		}
+
+		const user = await User.findOne({ clerkUserId: auth.userId });
+
+		if (!user) {
+			throw new NotFoundError('User not found');
+		}
+
+		res.status(200).json(user);
+	} catch (error) {
+		next(error);
+	}
+};
+
 export const updateUserByClerkId = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const auth = getAuth(req);
@@ -57,4 +77,9 @@ export const updateUserByClerkId = async (req: Request, res: Response, next: Nex
     next(error);
   }
 };
+
+
+
+
+
 

@@ -1,6 +1,8 @@
 import React from "react";
 import { Pencil, Bell, Settings, User, Phone, MapPin } from "lucide-react";
 import { useNavigate } from "react-router";
+import { UserAvatar } from "@clerk/clerk-react";
+import { useGetMeQuery } from "../../../store/api";
 
 export const EmployeeProfile = () => {
   const navigate = useNavigate();
@@ -43,11 +45,9 @@ export const EmployeeProfile = () => {
           <div className="bg-white w-full p-10 rounded-[32px] border border-gray-100 shadow-sm flex flex-col items-center">
             <div className="relative">
               <div className="w-40 h-40 rounded-[2.5rem] border-4 border-emerald-50 overflow-hidden bg-white shadow-md">
-                <img 
-                  src={userProfileImageUrl} 
-                  alt="Profile" 
+                <UserAvatar
+                  userId="user_123"
                   className="w-full h-full object-cover"
-                  onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=John+De+Lavada&background=064E3B&color=fff"; }}
                 />
               </div>
               <button 

@@ -2,6 +2,7 @@ export { baseApi } from './baseApi';
 
 export {
   useGetUsersQuery,
+  useGetMeQuery,
   useUpdateMeMutation,
 } from './usersApi';
 
