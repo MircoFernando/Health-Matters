@@ -30,7 +30,7 @@ import { PractitionerTestProfile } from "./pages/DashBoards/PractitionerDashboar
 import { PractitionerTestAppointments } from "./pages/DashBoards/PractitionerDashboard/test-appointments.jsx";
 // Import Manager Dashboard
 import ManagerDashboardLayout from "./pages/DashBoards/ManagerDashboard/manager-dashboard-layout.jsx";
-import { ManagerTestOverview } from "./pages/DashBoards/ManagerDashboard/test-overview.jsx";
+import { ManagerOverview, ManagerReferralSubmission } from "./pages/DashBoards/ManagerDashboard/manager-dashboard-pages.jsx";
 import { ManagerTestTeam } from "./pages/DashBoards/ManagerDashboard/test-team.jsx";
 import { ManagerTestInsights } from "./pages/DashBoards/ManagerDashboard/test-insights.jsx";
 import { ManagerTestProfile } from "./pages/DashBoards/ManagerDashboard/test-profile.jsx";
@@ -100,8 +100,9 @@ const ClerkWithRoutes = () => {
             </Route>
             {/* Manager Dashboard Routes */}
             <Route path="/manager/dashboard" element={<ManagerDashboardLayout />}>
-              <Route index element={<ManagerTestOverview />} />
+              <Route index element={<ManagerOverview />} />  
               <Route path="team" element={<ManagerTestTeam />} />
+              <Route path="referral" element={<ManagerReferralSubmission />} /> 
               <Route path="insights" element={<ManagerTestInsights />} />
               <Route path="budget" element={<ManagerTestBudget />} />
               <Route path="profile" element={<ManagerTestProfile />} />
