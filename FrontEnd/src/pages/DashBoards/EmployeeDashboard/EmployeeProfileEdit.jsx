@@ -168,10 +168,7 @@ export const EmployeeProfileEdit = () => {
           <div className="bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm flex flex-col items-center">
             <div className="relative group">
               <div className="w-40 h-40 rounded-[2.5rem] border-4 border-emerald-50 overflow-hidden bg-white shadow-md">
-                <UserAvatar
-                  userId={user?.clerkUserId}
-                  className="w-full h-full object-cover"
-                />
+                <UserAvatar width={160} />
               </div>
             </div>
 
