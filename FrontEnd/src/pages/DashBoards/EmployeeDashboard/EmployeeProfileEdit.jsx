@@ -60,7 +60,22 @@ export const EmployeeProfileEdit = () => {
 
   const handleSave = async () => {
     try {
-      await updateMe(form).unwrap();
+      // Strip empty strings before sending — the backend's z.coerce.date() rejects ""
+      // and email cannot be updated through this endpoint (it's managed by Clerk).
+      const payload = {
+        ...(form.firstName   && { firstName: form.firstName }),
+        ...(form.lastName    && { lastName: form.lastName }),
+        ...(form.dateOfBirth && { dateOfBirth: form.dateOfBirth }),
+        ...(form.department  && { department: form.department }),
+        ...(form.phone       && { phone: form.phone }),
+        address: {
+          ...(form.address.line1    && { line1: form.address.line1 }),
+          ...(form.address.line2    && { line2: form.address.line2 }),
+          ...(form.address.city     && { city: form.address.city }),
+          ...(form.address.postcode && { postcode: form.address.postcode }),
+        },
+      };
+      await updateMe(payload).unwrap();
       // Navigate back after a short delay so success message is visible
       setTimeout(() => navigate(-1), 1200);
     } catch (_) {
@@ -69,17 +84,22 @@ export const EmployeeProfileEdit = () => {
   };
 
   // Reusable Edit Field Component
-  const EditField = ({ label, name, value, type = "text", fullWidth = false }) => (
+  const EditField = ({ label, name, value, type = "text", fullWidth = false, readOnly = false }) => (
     <div className={fullWidth ? "md:col-span-2" : ""}>
       <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">
-        {label}
+        {label}{readOnly && <span className="ml-2 normal-case font-normal text-gray-300">(managed by Clerk)</span>}
       </label>
       <input
         type={type}
         name={name}
         value={value}
-        onChange={handleChange}
-        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-slate-700 font-medium focus:bg-white focus:ring-2 focus:ring-[#064E3B] focus:border-transparent outline-none transition-all"
+        onChange={readOnly ? undefined : handleChange}
+        readOnly={readOnly}
+        className={`w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-slate-700 font-medium outline-none transition-all ${
+          readOnly
+            ? "opacity-50 cursor-not-allowed"
+            : "focus:bg-white focus:ring-2 focus:ring-[#064E3B] focus:border-transparent"
+        }`}
       />
     </div>
   );
@@ -217,7 +237,7 @@ export const EmployeeProfileEdit = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <EditField label="Email" name="email" value={form.email} type="email" />
+              <EditField label="Email" name="email" value={form.email} type="email" readOnly />
               <EditField label="Phone Number" name="phone" value={form.phone} />
 
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-50">
