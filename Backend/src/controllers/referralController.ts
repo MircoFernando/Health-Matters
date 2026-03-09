@@ -9,7 +9,7 @@ import {
 	referralIdParamsSchema,
 	updateReferralBodySchema,
 } from '../Dtos/referral.dto';
-import { ValidationError, NotFoundError } from '../errors/errors';
+import { ValidationError, NotFoundError, UnauthorizedError } from '../errors/errors';
 import { getAuth } from '@clerk/express';
 
 const formatValidationErrors = (error: ZodError) =>
@@ -148,6 +148,53 @@ export const deleteReferralByPatientId = async (
 			message: 'Referrals deleted successfully',
 			deletedCount: deleteResult.deletedCount,
 		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const updateReferralById = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const auth = getAuth(req);
+
+		if (!auth.userId) {
+			throw new UnauthorizedError('Authentication required');
+		}
+
+		const parsedParams = referralIdParamsSchema.safeParse(req.params);
+		if (!parsedParams.success) {
+			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedParams.error)));
+		}
+
+		const parsedBody = updateReferralBodySchema.safeParse(req.body);
+		if (!parsedBody.success) {
+			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedBody.error)));
+		}
+
+		const { referralId } = parsedParams.data;
+		const updateFields: Record<string, unknown> = { ...parsedBody.data };
+
+		// When a practitioner accepts, record their ID from the token (never trust the client for this)
+		if (parsedBody.data.referralStatus === 'accepted') {
+			updateFields.practitionerClerkUserId = auth.userId;
+			updateFields.acceptedDate = new Date();
+		}
+
+		if (parsedBody.data.referralStatus === 'rejected') {
+			updateFields.rejectedDate = new Date();
+		}
+
+		const updatedReferral = await Referral.findByIdAndUpdate(
+			referralId,
+			{ $set: updateFields },
+			{ new: true, runValidators: true }
+		);
+
+		if (!updatedReferral) {
+			throw new NotFoundError('Referral not found');
+		}
+
+		res.status(200).json(updatedReferral);
 	} catch (error) {
 		next(error);
 	}
