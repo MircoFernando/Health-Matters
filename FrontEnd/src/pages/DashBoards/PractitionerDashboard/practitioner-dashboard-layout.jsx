@@ -72,7 +72,7 @@ const PractitionerDashboardLayout = () => {
           <Sidebar className="border-r border-blue-800 bg-blue-800 text-white">
             <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6">
               <span className="text-lg font-bold tracking-wide text-white">
-                Practitioner Panel
+                Practitioners
               </span>
             </SidebarHeader>
 
@@ -135,7 +135,7 @@ const PractitionerDashboardLayout = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="bg-blue-700 text-white hover:bg-blue-800" />
                 <h2 className="text-lg font-semibold text-slate-800">
-                  Dashboard
+                  Welcome, Dr. {user?.firstName}
                 </h2>
               </div>
               <div className="flex items-center gap-2">

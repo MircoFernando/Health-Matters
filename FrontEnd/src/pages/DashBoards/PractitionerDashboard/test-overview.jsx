@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const dummyReferrals = [
+const initialReferrals = [
   {
     id: "REF-2026-001",
     patient: "John Smith",
@@ -8,6 +8,7 @@ const dummyReferrals = [
     service: "Physiotherapy",
     status: "Pending",
     assignedTo: "",
+    assignedFrom: "Dr. Alan Parker",
   },
   {
     id: "REF-2026-002",
@@ -16,6 +17,7 @@ const dummyReferrals = [
     service: "Occupational Therapy",
     status: "Accepted",
     assignedTo: "Dr. Sarah Mitchell",
+    assignedFrom: "",
   },
   {
     id: "REF-2026-003",
@@ -24,6 +26,7 @@ const dummyReferrals = [
     service: "Psychology",
     status: "Accepted",
     assignedTo: "Dr. James Wilson",
+    assignedFrom: "",
   },
   {
     id: "REF-2026-004",
@@ -32,6 +35,7 @@ const dummyReferrals = [
     service: "Ergonomic Assessment",
     status: "Accepted",
     assignedTo: "Dr. Sarah Mitchell",
+    assignedFrom: "",
   },
   {
     id: "REF-2026-005",
@@ -39,23 +43,46 @@ const dummyReferrals = [
     date: "2026-02-20",
     service: "Health Surveillance",
     status: "Rejected",
-    assignedTo: "Dr. Emily Chen",
+    assignedTo: "",
+    assignedFrom: "Dr. Emily Chen",
   },
 ];
 
 export const PractitionerTestOverview = () => {
   const [search, setSearch] = useState("");
+  const [referrals, setReferrals] = useState(initialReferrals);
 
-  const filtered = dummyReferrals.filter(
+  const filtered = referrals.filter(
     (r) =>
       r.patient.toLowerCase().includes(search.toLowerCase()) ||
       r.id.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Summary counts
   const summary = {
-    pending: dummyReferrals.filter((r) => r.status === "Pending").length,
-    assigned: dummyReferrals.filter((r) => r.status === "Assigned").length,
-    accepted: dummyReferrals.filter((r) => r.status === "Accepted").length,
+    pending: referrals.filter((r) => r.status === "Pending").length,
+    assigned: referrals.filter((r) => r.status === "Accepted" && r.assignedFrom).length, 
+    // accepted referrals that were sent to you
+    accepted: referrals.filter((r) => r.status === "Accepted" && r.assignedTo).length, 
+    // accepted referrals that already had assignedTo
+  };
+
+  const handleDecision = (id, decision) => {
+    setReferrals((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              status: decision,
+              assignedTo: decision === "Accepted" ? "You" : "", 
+            }
+          : r
+      )
+    );
+    const referral = referrals.find((r) => r.id === id);
+    alert(
+      `Referral ${id} for ${referral.patient} (${referral.service}) has been ${decision}.`
+    );
   };
 
   return (
@@ -102,6 +129,7 @@ export const PractitionerTestOverview = () => {
               <th className="px-4 py-2 text-left font-medium text-gray-700">Service Type</th>
               <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
               <th className="px-4 py-2 text-left font-medium text-gray-700">Assigned To</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-700">Assigned From</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -111,8 +139,38 @@ export const PractitionerTestOverview = () => {
                 <td className="px-4 py-2">{r.patient}</td>
                 <td className="px-4 py-2">{r.date}</td>
                 <td className="px-4 py-2">{r.service}</td>
-                <td className="px-4 py-2">{r.status}</td>
+                <td className="px-4 py-2">
+                  {r.assignedFrom && r.status === "Pending" ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDecision(r.id, "Accepted")}
+                        className="rounded bg-green-600 px-3 py-1 text-white hover:bg-green-700"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleDecision(r.id, "Rejected")}
+                        className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  ) : (
+                    <span
+                      className={`px-2 py-1 rounded ${
+                        r.status === "Accepted"
+                          ? "bg-green-100 text-green-800"
+                          : r.status === "Rejected"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {r.status}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-2">{r.assignedTo || "-"}</td>
+                <td className="px-4 py-2">{r.assignedFrom || "-"}</td>
               </tr>
             ))}
           </tbody>
@@ -120,7 +178,7 @@ export const PractitionerTestOverview = () => {
 
         {/* Footer */}
         <div className="px-4 py-2 text-sm text-gray-600">
-          Showing {filtered.length} of {dummyReferrals.length} referrals
+          Showing {filtered.length} of {referrals.length} referrals
         </div>
       </div>
     </div>
