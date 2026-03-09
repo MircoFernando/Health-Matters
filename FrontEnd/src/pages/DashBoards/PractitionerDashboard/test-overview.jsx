@@ -1,89 +1,67 @@
-import React, { useState } from "react";
-
-const initialReferrals = [
-  {
-    id: "REF-2026-001",
-    patient: "John Smith",
-    date: "2026-02-24",
-    service: "Physiotherapy",
-    status: "Pending",
-    assignedTo: "",
-    assignedFrom: "Dr. Alan Parker",
-  },
-  {
-    id: "REF-2026-002",
-    patient: "Emma Johnson",
-    date: "2026-02-23",
-    service: "Occupational Therapy",
-    status: "Accepted",
-    assignedTo: "Dr. Sarah Mitchell",
-    assignedFrom: "",
-  },
-  {
-    id: "REF-2026-003",
-    patient: "Michael Brown",
-    date: "2026-02-22",
-    service: "Psychology",
-    status: "Accepted",
-    assignedTo: "Dr. James Wilson",
-    assignedFrom: "",
-  },
-  {
-    id: "REF-2026-004",
-    patient: "Sarah Davis",
-    date: "2026-02-21",
-    service: "Ergonomic Assessment",
-    status: "Accepted",
-    assignedTo: "Dr. Sarah Mitchell",
-    assignedFrom: "",
-  },
-  {
-    id: "REF-2026-005",
-    patient: "Robert Wilson",
-    date: "2026-02-20",
-    service: "Health Surveillance",
-    status: "Rejected",
-    assignedTo: "",
-    assignedFrom: "Dr. Emily Chen",
-  },
-];
+import React, { useState, useEffect } from "react";
+import { useGetReferralsQuery } from "@/store/api";
 
 export const PractitionerTestOverview = () => {
   const [search, setSearch] = useState("");
-  const [referrals, setReferrals] = useState(initialReferrals);
 
-  const filtered = referrals.filter(
+  const {
+    data: referrals = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetReferralsQuery();
+
+  const [localReferrals, setLocalReferrals] = useState([]);
+
+  // Sync local state with API data
+  useEffect(() => {
+    if (referrals?.length) {
+      setLocalReferrals(referrals);
+    }
+  }, [referrals]);
+
+  // Filter by patient ID or referral ID
+  const filtered = localReferrals.filter(
     (r) =>
-      r.patient.toLowerCase().includes(search.toLowerCase()) ||
-      r.id.toLowerCase().includes(search.toLowerCase())
+      r.patientClerkUserId?.toLowerCase().includes(search.toLowerCase()) ||
+      r._id?.toLowerCase().includes(search.toLowerCase())
   );
 
   // Summary counts
   const summary = {
-    pending: referrals.filter((r) => r.status === "Pending").length,
-    assigned: referrals.filter((r) => r.status === "Accepted" && r.assignedFrom).length, 
-    // accepted referrals that were sent to you
-    accepted: referrals.filter((r) => r.status === "Accepted" && r.assignedTo).length, 
-    // accepted referrals that already had assignedTo
+    pending: localReferrals.filter((r) => r.referralStatus === "pending").length,
+    assigned: localReferrals.filter(
+      (r) => r.referralStatus === "accepted" && r.assignedByClerkUserId
+    ).length,
+    accepted: localReferrals.filter(
+      (r) => r.referralStatus === "accepted" && r.practitionerClerkUserId
+    ).length,
   };
 
+  // Accept/Reject logic
   const handleDecision = (id, decision) => {
-    setReferrals((prev) =>
+    setLocalReferrals((prev) =>
       prev.map((r) =>
-        r.id === id
+        r._id === id
           ? {
               ...r,
-              status: decision,
-              assignedTo: decision === "Accepted" ? "You" : "", 
+              referralStatus: decision.toLowerCase(),
+              practitionerClerkUserId: decision === "Accepted" ? "You" : null,
+              acceptedDate: decision === "Accepted" ? new Date() : r.acceptedDate,
+              rejectedDate: decision === "Rejected" ? new Date() : r.rejectedDate,
             }
           : r
       )
     );
-    const referral = referrals.find((r) => r.id === id);
+    const referral = localReferrals.find((r) => r._id === id);
     alert(
-      `Referral ${id} for ${referral.patient} (${referral.service}) has been ${decision}.`
+      `Referral ${id} for patient ${referral.patientClerkUserId} (${referral.serviceType}) has been ${decision}.`
     );
   };
+
+  if (isLoading) return <p className="p-8">Loading referrals...</p>;
+  if (isError) return <p className="p-8 text-red-600">Error: {error?.message}</p>;
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-6">
@@ -124,7 +102,7 @@ export const PractitionerTestOverview = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-2 text-left font-medium text-gray-700">Referral ID</th>
-              <th className="px-4 py-2 text-left font-medium text-gray-700">Patient Name</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-700">Patient Clerk ID</th>
               <th className="px-4 py-2 text-left font-medium text-gray-700">Date Submitted</th>
               <th className="px-4 py-2 text-left font-medium text-gray-700">Service Type</th>
               <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
@@ -134,22 +112,24 @@ export const PractitionerTestOverview = () => {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filtered.map((r) => (
-              <tr key={r.id}>
-                <td className="px-4 py-2">{r.id}</td>
-                <td className="px-4 py-2">{r.patient}</td>
-                <td className="px-4 py-2">{r.date}</td>
-                <td className="px-4 py-2">{r.service}</td>
+              <tr key={r._id}>
+                <td className="px-4 py-2">{r._id}</td>
+                <td className="px-4 py-2">{r.patientClerkUserId}</td>
                 <td className="px-4 py-2">
-                  {r.assignedFrom && r.status === "Pending" ? (
+                  {new Date(r.createdAt).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-2">{r.serviceType}</td>
+                <td className="px-4 py-2">
+                  {!r.practitionerClerkUserId && r.referralStatus === "pending" ? (
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleDecision(r.id, "Accepted")}
+                        onClick={() => handleDecision(r._id, "Accepted")}
                         className="rounded bg-green-600 px-3 py-1 text-white hover:bg-green-700"
                       >
                         Accept
                       </button>
                       <button
-                        onClick={() => handleDecision(r.id, "Rejected")}
+                        onClick={() => handleDecision(r._id, "Rejected")}
                         className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
                       >
                         Reject
@@ -158,19 +138,19 @@ export const PractitionerTestOverview = () => {
                   ) : (
                     <span
                       className={`px-2 py-1 rounded ${
-                        r.status === "Accepted"
+                        r.referralStatus === "accepted"
                           ? "bg-green-100 text-green-800"
-                          : r.status === "Rejected"
+                          : r.referralStatus === "rejected"
                           ? "bg-red-100 text-red-800"
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
-                      {r.status}
+                      {r.referralStatus}
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-2">{r.assignedTo || "-"}</td>
-                <td className="px-4 py-2">{r.assignedFrom || "-"}</td>
+                <td className="px-4 py-2">{r.practitionerClerkUserId || "-"}</td>
+                <td className="px-4 py-2">{r.assignedByClerkUserId || "-"}</td>
               </tr>
             ))}
           </tbody>
@@ -178,7 +158,7 @@ export const PractitionerTestOverview = () => {
 
         {/* Footer */}
         <div className="px-4 py-2 text-sm text-gray-600">
-          Showing {filtered.length} of {referrals.length} referrals
+          Showing {filtered.length} of {localReferrals.length} referrals
         </div>
       </div>
     </div>
