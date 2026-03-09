@@ -69,8 +69,8 @@ const PractitionerDashboardLayout = () => {
     <TooltipProvider>
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-blue-50">
-          <Sidebar className="border-r border-blue-800 bg-blue-800 text-white">
-            <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6">
+          <Sidebar className="border-r border-black bg-blue-800 text-white">
+            <SidebarHeader className="flex h-16 items-center border-b px-6">
               <span className="text-lg font-bold tracking-wide text-white">
                 Practitioners
               </span>
@@ -110,8 +110,8 @@ const PractitionerDashboardLayout = () => {
               </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-amber-800 p-4">
-              <div className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-amber-800">
+            <SidebarFooter className="border-t border-black p-4">
+              <div className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-black">
                 <div className="flex items-center gap-3">
                   <UserButton
                     appearance={{

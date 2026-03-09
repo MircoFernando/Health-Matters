@@ -89,7 +89,7 @@ export const PractitionerTestAppointments = () => {
         {TIME_SLOTS.map((time) => {
           const appt = appointmentsByStartTime[time];
           return (
-            <div key={time} className="flex items-center px-4 py-3 min-h-[48px]">
+            <div key={time} className="flex items-center px-4 py-3 min-h-12">
               <div className="w-20 text-gray-500 font-mono">{time}</div>
               <div className="flex-1 ml-4 text-sm text-gray-700">
                 {!appt ? (
