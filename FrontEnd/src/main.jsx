@@ -33,9 +33,10 @@ import { PractitionerTestPatients } from "./pages/DashBoards/PractitionerDashboa
 import { PractitionerTestReviews } from "./pages/DashBoards/PractitionerDashboard/test-reviews.jsx";
 import { PractitionerTestProfile } from "./pages/DashBoards/PractitionerDashboard/test-profile.jsx";
 import { PractitionerTestAppointments } from "./pages/DashBoards/PractitionerDashboard/test-appointments.jsx";
+import { PractitionerTestCreateReferral } from './pages/DashBoards/PractitionerDashboard/test-create-referral.jsx';
 // Import Manager Dashboard
 import ManagerDashboardLayout from "./pages/DashBoards/ManagerDashboard/manager-dashboard-layout.jsx";
-import { ManagerTestOverview } from "./pages/DashBoards/ManagerDashboard/test-overview.jsx";
+import { ManagerOverview, ManagerReferralSubmission } from "./pages/DashBoards/ManagerDashboard/manager-dashboard-pages.jsx";
 import { ManagerTestTeam } from "./pages/DashBoards/ManagerDashboard/test-team.jsx";
 import { ManagerTestInsights } from "./pages/DashBoards/ManagerDashboard/test-insights.jsx";
 import { ManagerTestProfile } from "./pages/DashBoards/ManagerDashboard/test-profile.jsx";
@@ -104,11 +105,13 @@ const ClerkWithRoutes = () => {
               <Route path="reviews" element={<PractitionerTestReviews />} />
               <Route path="appointments" element={<PractitionerTestAppointments />} />
               <Route path="profile" element={<PractitionerTestProfile />} />
+              <Route path='create_referral' element={ <PractitionerTestCreateReferral /> } />
             </Route>
             {/* Manager Dashboard Routes */}
             <Route path="/manager/dashboard" element={<ManagerDashboardLayout />}>
-              <Route index element={<ManagerTestOverview />} />
+              <Route index element={<ManagerOverview />} />  
               <Route path="team" element={<ManagerTestTeam />} />
+              <Route path="referral" element={<ManagerReferralSubmission />} /> 
               <Route path="insights" element={<ManagerTestInsights />} />
               <Route path="budget" element={<ManagerTestBudget />} />
               <Route path="profile" element={<ManagerTestProfile />} />
