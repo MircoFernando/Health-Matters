@@ -12,16 +12,16 @@ function formatDateKey(date) {
 }
 
 const DUMMY_APPOINTMENTS = {
-  "2026-03-03": [
+  "2026-03-08": [
     { id: 1, patient: "John Doe", patientId: "P-1001", serviceType: "Physiotherapy", startTime: "08:30", endTime: "09:15" },
     { id: 2, patient: "Jane Smith", patientId: "P-1002", serviceType: "Dental", startTime: "09:30", endTime: "10:00" },
     { id: 3, patient: "Alex Johnson", patientId: "P-1003", serviceType: "Cardiology", startTime: "10:30", endTime: "11:30" },
   ],
-  "2026-03-08": [
+  "2026-03-10": [
     { id: 4, patient: "Mary Wilson", patientId: "P-1004", serviceType: "Neurology", startTime: "08:00", endTime: "08:45" },
     { id: 5, patient: "Peter Parker", patientId: "P-1005", serviceType: "General Practice", startTime: "09:00", endTime: "09:30" },
   ],
-  "2026-03-10": [
+  "2026-03-11": [
     { id: 6, patient: "Mary Wilson", patientId: "P-1004", serviceType: "Neurology", startTime: "09:00", endTime: "09:45" },
     { id: 7, patient: "Peter Parker", patientId: "P-1005", serviceType: "General Practice", startTime: "11:00", endTime: "11:30" },
   ],
