@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { CheckCheck, CalendarDays, UserRoundCheck, X, BellRing, FileText, CheckCircle2 } from "lucide-react";
-import { useGetNotificationsQuery, useMarkNotificationReadMutation } from "../../../store/api";
+import { CalendarDays, UserRoundCheck, X, BellRing, FileText, CheckCircle2 } from "lucide-react";
+import { useGetNotificationsQuery } from "../../../store/api";
 
 const formatDateGroup = (dateString) => {
   const date = new Date(dateString);
@@ -51,10 +51,8 @@ const getIcon = (type) => {
 };
 
 export const Notifications = () => {
-  const [filter, setFilter] = useState("all"); // 'all' or 'unread'
   const [selectedNote, setSelectedNote] = useState(null);
   const { data, isLoading, isError } = useGetNotificationsQuery();
-  const [markRead] = useMarkNotificationReadMutation();
 
   const notifications = data ?? [];
 
@@ -68,24 +66,11 @@ export const Notifications = () => {
         date: formatDisplayDate(date),
         group: formatDateGroup(date),
         type: notification.type,
-        unread: !notification.channels?.inApp?.read,
       };
     });
   }, [notifications]);
 
-  const filteredNotifications = useMemo(() => {
-    return enrichedNotifications.filter((n) => (filter === "all" ? true : n.unread));
-  }, [enrichedNotifications, filter]);
-
-  const unreadCount = enrichedNotifications.filter((n) => n.unread).length;
-
-  const markAllAsRead = async () => {
-    await Promise.all(
-      enrichedNotifications
-        .filter((n) => n.unread)
-        .map((n) => markRead(n.id).catch(() => null))
-    );
-  };
+  const filteredNotifications = useMemo(() => enrichedNotifications, [enrichedNotifications]);
 
   const hasNotifications = filteredNotifications.length > 0;
   const showEmptyState = !isLoading && !hasNotifications;
@@ -114,27 +99,9 @@ export const Notifications = () => {
           </div>
 
           <div className="flex justify-between items-center mb-4 px-1 border-b border-green-200 flex-shrink-0">
-            <div className="flex gap-8 text-slate-500 text-sm font-bold pb-2">
-              <span
-                onClick={() => setFilter("all")}
-                className={`cursor-pointer transition-all ${filter === "all" ? "border-b-2 border-slate-900 text-slate-900" : "text-slate-400"}`}
-              >
-                All
-              </span>
-              <span
-                onClick={() => setFilter("unread")}
-                className={`cursor-pointer transition-all ${filter === "unread" ? "border-b-2 border-slate-900 text-slate-900" : "text-slate-400"}`}
-              >
-                Unread ({unreadCount})
-              </span>
+            <div className="text-slate-500 text-sm font-bold pb-2">
+              <span>All notifications</span>
             </div>
-            <button
-              onClick={markAllAsRead}
-              disabled={!unreadCount}
-              className="text-slate-700 text-xs font-bold flex items-center gap-1 disabled:opacity-40"
-            >
-              <CheckCheck size={16} /> Mark all as read
-            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto pr-2">
@@ -157,8 +124,7 @@ export const Notifications = () => {
                         <div
                           key={note.id}
                           onClick={() => {
-                            markRead(note.id).catch(() => null);
-                            setSelectedNote({ ...note, unread: false });
+                            setSelectedNote(note);
                           }}
                           className={`cursor-pointer rounded-2xl flex items-center justify-between p-4 shadow-sm border transition-all ${
                             selectedNote?.id === note.id
@@ -169,11 +135,10 @@ export const Notifications = () => {
                           <div className="flex items-center gap-4 truncate">
                             <div className="flex-shrink-0">{getIcon(note.type)}</div>
                             <div className="truncate">
-                              <p className={`text-slate-800 text-sm truncate ${note.unread ? "font-bold" : ""}`}>{note.title}</p>
+                              <p className="text-slate-800 text-sm truncate font-medium">{note.title}</p>
                               <p className="text-slate-400 text-[10px] mt-1 font-bold">{note.date}</p>
                             </div>
                           </div>
-                          {note.unread && <div className="w-2.5 h-2.5 bg-sky-400 rounded-full flex-shrink-0 ml-4"></div>}
                         </div>
                       ))}
                     </div>

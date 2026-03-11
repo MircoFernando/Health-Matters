@@ -26,5 +26,4 @@ export {
 
 export {
   useGetNotificationsQuery,
-  useMarkNotificationReadMutation,
 } from './notificationsApi';
