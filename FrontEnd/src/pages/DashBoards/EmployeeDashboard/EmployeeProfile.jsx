@@ -25,8 +25,8 @@ const DisplayField = ({ label, value }) => (
     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 ml-1">
       {label}
     </p>
-    <div className="w-full bg-gray-50 rounded-2xl px-5 py-3.5 text-slate-700 font-semibold border border-transparent shadow-sm min-h-[48px] flex items-center">
-      {displayValue(value)}
+    <div className="w-full bg-gray-50 rounded-2xl px-5 py-3.5 text-slate-700 font-semibold border border-transparent shadow-sm min-h-[48px] flex items-center overflow-hidden">
+      <span className="truncate w-full">{displayValue(value)}</span>
     </div>
   </div>
 );
@@ -165,30 +165,30 @@ export const EmployeeProfile = () => {
             </div>
 
             {/* Name & Badge */}
-            <h2 className="mt-6 text-2xl font-bold text-slate-800 text-center">
+            <h2 className="mt-6 text-2xl font-bold text-slate-800 text-center truncate w-full text-center">
               {fullName}
             </h2>
-            <div className="mt-2 border border-gray-200 px-4 py-1 rounded-full text-[11px] font-bold text-gray-400 tracking-[0.2em] uppercase">
-              {badgeLabel}
+            <div className="mt-2 border border-gray-200 px-4 py-1 rounded-full text-[11px] font-bold text-gray-400 tracking-[0.2em] uppercase max-w-full overflow-hidden">
+              <span className="truncate block">{badgeLabel}</span>
             </div>
 
             {/* Quick info pills */}
             {profile.email && (
-              <div className="mt-6 w-full bg-gray-50 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-slate-600">
+              <div className="mt-6 w-full bg-gray-50 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-slate-600 overflow-hidden">
                 <ShieldCheck size={16} className="text-[#064E3B] shrink-0" />
                 <span className="truncate font-medium">{profile.email}</span>
               </div>
             )}
             {profile.phone && (
-              <div className="mt-2 w-full bg-gray-50 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-slate-600">
+              <div className="mt-2 w-full bg-gray-50 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-slate-600 overflow-hidden">
                 <Phone size={16} className="text-[#064E3B] shrink-0" />
-                <span className="font-medium">{profile.phone}</span>
+                <span className="truncate font-medium">{profile.phone}</span>
               </div>
             )}
             {profile.dateOfBirth && (
-              <div className="mt-2 w-full bg-gray-50 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-slate-600">
+              <div className="mt-2 w-full bg-gray-50 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-slate-600 overflow-hidden">
                 <Calendar size={16} className="text-[#064E3B] shrink-0" />
-                <span className="font-medium">{dob}</span>
+                <span className="truncate font-medium">{dob}</span>
               </div>
             )}
 

@@ -47,7 +47,7 @@ const EditField = ({
       readOnly={readOnly}
       placeholder={placeholder}
       autoComplete="off"
-      className={`w-full border rounded-2xl px-4 py-3 text-slate-700 font-medium outline-none transition-all ${
+      className={`w-full border rounded-2xl px-4 py-3 text-slate-700 font-medium outline-none transition-all overflow-hidden text-ellipsis ${
         readOnly
           ? "bg-gray-100 border-gray-100 opacity-60 cursor-not-allowed"
           : "bg-gray-50 border-gray-100 focus:bg-white focus:ring-2 focus:ring-[#064E3B] focus:border-transparent"
@@ -283,11 +283,13 @@ export const EmployeeProfileEdit = () => {
             </div>
 
             {/* Live name preview */}
-            <h2 className="mt-6 text-xl font-bold text-slate-700 text-center">
+            <h2 className="mt-6 text-xl font-bold text-slate-700 text-center truncate w-full">
               {previewName}
             </h2>
-            <div className="mt-2 border border-gray-200 px-4 py-1 rounded-full text-[11px] font-bold text-gray-400 tracking-[0.2em] uppercase">
-              {user?.department || user?.role || "Employee"}
+            <div className="mt-2 border border-gray-200 px-4 py-1 rounded-full text-[11px] font-bold text-gray-400 tracking-[0.2em] uppercase max-w-full overflow-hidden">
+              <span className="truncate block">
+                {user?.department || user?.role || "Employee"}
+              </span>
             </div>
 
             {/* Buttons */}
