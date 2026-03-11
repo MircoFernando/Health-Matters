@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useUser } from "@clerk/clerk-react";
-import { useGetMeQuery, useUpdateMeMutation } from "../../../store/api";
+import { useGetUsersQuery, useUpdateMeMutation } from "../../../store/api";
 
 // ---------------------------------------------------------------------------
 // EditField — defined OUTSIDE the parent component so it never remounts,
@@ -86,7 +86,19 @@ export const EmployeeProfileEdit = () => {
   const navigate = useNavigate();
   const { user: clerkUser } = useUser();
 
-  const { data: user, isLoading, isError } = useGetMeQuery();
+  // Fetch current user by Clerk ID — same pattern as EmployeeProfile
+  const {
+    data: users,
+    isLoading,
+    isError,
+  } = useGetUsersQuery(
+    { clerkUserId: clerkUser?.id },
+    { skip: !clerkUser?.id }
+  );
+
+  // GET /api/users returns an array; grab the first (and only) match
+  const user = users?.[0];
+
   const [
     updateMe,
     {
@@ -148,21 +160,24 @@ export const EmployeeProfileEdit = () => {
   }, [isSuccess, navigate]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    // Reset any previous save error so the banner clears on typing
-    if (isSaveError) resetMutation?.();
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      // Reset any previous save error so the banner clears on typing
+      if (isSaveError) resetMutation?.();
 
-    if (name.startsWith("address.")) {
-      const key = name.split(".")[1];
-      setForm((prev) => ({
-        ...prev,
-        address: { ...prev.address, [key]: value },
-      }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
-  }, [isSaveError, resetMutation]);
+      if (name.startsWith("address.")) {
+        const key = name.split(".")[1];
+        setForm((prev) => ({
+          ...prev,
+          address: { ...prev.address, [key]: value },
+        }));
+      } else {
+        setForm((prev) => ({ ...prev, [name]: value }));
+      }
+    },
+    [isSaveError, resetMutation]
+  );
 
   const handleSave = async () => {
     try {
@@ -194,7 +209,7 @@ export const EmployeeProfileEdit = () => {
   };
 
   // ── Loading ───────────────────────────────────────────────────────────────
-  if (isLoading) {
+  if (isLoading || !clerkUser) {
     return (
       <div className="max-w-7xl mx-auto p-6 min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-slate-500">

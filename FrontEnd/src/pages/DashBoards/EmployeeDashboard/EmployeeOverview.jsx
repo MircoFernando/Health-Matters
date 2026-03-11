@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useGetReferralsByPatientIdQuery } from "../../../store/api/referralsApi";
 import { useGetAppointmentsByEmployeeIdQuery } from "../../../store/api/appointmentsApi";
-import { useGetAdviceSheetAccessCountByEmployeeIdQuery } from "../../../store/api/medicalRecordsApi";
 
 import {
   Clock,
@@ -10,9 +9,9 @@ import {
   PlusCircle,
   User,
   ClipboardList,
+  Calendar as CalendarIcon,
   CalendarDays,
   BookOpen,
-  Calendar as CalendarIcon
 } from "lucide-react";
 
 import { Link } from "react-router";
@@ -43,53 +42,46 @@ export const EmployeeOverview = () => {
     skip: !patientId
   });
 
-  const {
-    data: accessCountResponse = { accessCount: 0 },
-    isLoading: isAdviceLoading,
-    isError: isAdviceError
-  } = useGetAdviceSheetAccessCountByEmployeeIdQuery(patientId, {
-    skip: !patientId
-  });
-
-  const adviceCount = accessCountResponse?.accessCount ?? 0;
-
-  const now = new Date();
-
-  const upcomingAppointments = appointments
-    .filter((app) => {
-      const scheduled = new Date(app.scheduledDate);
-      return (
-        scheduled >= now &&
-        ["scheduled", "confirmed", "in_progress"].includes(app.status)
-      );
-    })
-    .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
-
-  const upcomingCount = upcomingAppointments.length;
-  const nextAppointment = upcomingAppointments[0];
-
-  const daysUntilNext = nextAppointment
-    ? Math.max(
-        0,
-        Math.ceil(
-          (new Date(nextAppointment.scheduledDate) - now) /
-            (1000 * 60 * 60 * 24)
-        )
-      )
-    : null;
-
-  const nextAppointmentLabel = nextAppointment
-    ? daysUntilNext === 0
-      ? "Today"
-      : daysUntilNext === 1
-      ? "Tomorrow"
-      : `Next in ${daysUntilNext} days`
-    : "No upcoming appointments";
-
   const totalReferrals = referrals.length;
 
   const pendingReferrals = referrals.filter(
     r => r.referralStatus === "pending"
+  ).length;
+
+  // Upcoming appointments: scheduled in the future
+  const now = new Date();
+
+  const upcomingAppointments = appointments.filter(
+    a => a.scheduledDate && new Date(a.scheduledDate) > now
+  );
+
+  const upcomingCount = upcomingAppointments.length;
+
+  // Next appointment — soonest future date
+  const nextAppointment = upcomingAppointments
+    .slice()
+    .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))[0];
+
+  const daysUntilNext = nextAppointment
+    ? Math.ceil(
+        (new Date(nextAppointment.scheduledDate) - now) / (1000 * 60 * 60 * 24)
+      )
+    : null;
+
+  const upcomingSubtext =
+    daysUntilNext !== null
+      ? `Next in ${daysUntilNext} day${daysUntilNext !== 1 ? "s" : ""}`
+      : "None scheduled";
+
+  // Advice sheets: appointments completed this calendar month
+  // (used as proxy until a dedicated advice-sheets endpoint exists)
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const adviceSheetsCount = appointments.filter(
+    a =>
+      a.scheduledDate &&
+      new Date(a.scheduledDate) >= startOfMonth &&
+      new Date(a.scheduledDate) <= now
   ).length;
 
   const formatStatus = (status) => {
@@ -108,12 +100,9 @@ export const EmployeeOverview = () => {
         })
       : "—";
 
-  const isAnyLoading = isLoading || isAdviceLoading;
-  const isAnyError = isError || isAdviceError;
+  if (isLoading) return <div className="p-10">Loading dashboard...</div>;
 
-  if (isAnyLoading) return <div className="p-10">Loading dashboard...</div>;
-
-  if (isAnyError)
+  if (isError)
     return (
       <div className="p-10 text-red-500">
         Failed to load dashboard
@@ -160,7 +149,7 @@ export const EmployeeOverview = () => {
         <StatCard
           title="Upcoming Appointments"
           value={upcomingCount}
-          subtext={nextAppointmentLabel}
+          subtext={upcomingSubtext}
           icon={CalendarDays}
           iconBg="bg-purple-50"
           iconColor="text-purple-600"
@@ -168,12 +157,13 @@ export const EmployeeOverview = () => {
 
         <StatCard
           title="Advice Sheets Accessed"
-          value={adviceCount}
-          subtext="This month"
+          value={adviceSheetsCount}
+          subtext="This Month"
           icon={BookOpen}
           iconBg="bg-emerald-50"
           iconColor="text-emerald-600"
         />
+
       </div>
 
       {/* REFERRAL HISTORY */}

@@ -13,20 +13,12 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useUser } from "@clerk/clerk-react";
-import { useGetMeQuery } from "../../../store/api";
+import { useGetUsersQuery } from "../../../store/api";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const truncate = (value, max = 20) => {
-  const str = String(value ?? "");
-  return str.length > max ? `${str.slice(0, max)}...` : str;
-};
-
-const displayValue = (value) => {
-  const text = value && String(value).trim() ? String(value).trim() : "";
-  return text ? truncate(text, 20) : "—";
-};
+const displayValue = (value) => (value && String(value).trim() ? value : "—");
 
 const DisplayField = ({ label, value }) => (
   <div>
@@ -69,10 +61,23 @@ const ProfileAvatar = ({ clerkUser, firstName }) => {
 export const EmployeeProfile = () => {
   const navigate = useNavigate();
   const { user: clerkUser } = useUser();
-  const { data: user, isLoading, isError, error } = useGetMeQuery();
+
+  // Fetch the current user by their Clerk ID using the supported query param
+  const {
+    data: users,
+    isLoading,
+    isError,
+    error,
+  } = useGetUsersQuery(
+    { clerkUserId: clerkUser?.id },
+    { skip: !clerkUser?.id }   // don't fire until Clerk has resolved
+  );
+
+  // GET /api/users returns an array; grab the first (and only) match
+  const user = users?.[0];
 
   // ── Loading ──────────────────────────────────────────────────────────────
-  if (isLoading) {
+  if (isLoading || !clerkUser) {
     return (
       <div className="max-w-7xl mx-auto p-6 min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-slate-500">
@@ -171,7 +176,7 @@ export const EmployeeProfile = () => {
             {profile.email && (
               <div className="mt-6 w-full bg-gray-50 rounded-2xl px-4 py-3 flex items-center gap-3 text-sm text-slate-600">
                 <ShieldCheck size={16} className="text-[#064E3B] shrink-0" />
-                <span className="truncate font-medium">{truncate(profile.email)}</span>
+                <span className="truncate font-medium">{profile.email}</span>
               </div>
             )}
             {profile.phone && (
