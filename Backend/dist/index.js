@@ -11,7 +11,6 @@ const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const referralRoutes_1 = __importDefault(require("./routes/referralRoutes"));
 const serviceRoutes_1 = __importDefault(require("./routes/serviceRoutes"));
 const appointmentRoutes_1 = __importDefault(require("./routes/appointmentRoutes"));
-const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
 const logger_middleware_1 = require("./middlewares/logger-middleware");
 const express_2 = require("@clerk/express");
 const webhooks_1 = __importDefault(require("./middlewares/webhooks/webhooks"));
@@ -37,7 +36,6 @@ server.use('/api/users', userRoutes_1.default);
 server.use('/api/referrals', referralRoutes_1.default);
 server.use('/api/services', serviceRoutes_1.default);
 server.use('/api/appointments', appointmentRoutes_1.default);
-server.use('/api/notifications', notificationRoutes_1.default);
 // Global Error Handler (must be after all routes)
 server.use(errors_1.globalErrorHandlingMiddleware);
 // Connect to Database

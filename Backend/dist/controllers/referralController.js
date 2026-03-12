@@ -190,15 +190,10 @@ const assignReferralById = async (req, res, next) => {
         if (!updatedReferral) {
             throw new errors_1.NotFoundError('Referral not found');
         }
-        const appointment = await (0, appointmentFlow_1.assignAppointmentToPractitioner)({
+        await (0, appointmentFlow_1.assignAppointmentToPractitioner)({
             referral: updatedReferral,
             practitionerClerkUserId,
             assignedByClerkUserId: auth.userId || undefined,
-        });
-        await (0, appointmentFlow_1.notifyAppointmentAssigned)({
-            referral: updatedReferral,
-            appointmentId: appointment._id,
-            practitionerClerkUserId,
         });
         res.status(200).json(updatedReferral);
     }
