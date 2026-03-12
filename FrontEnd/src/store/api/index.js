@@ -14,6 +14,7 @@ export {
   useUpdateReferralsByPatientIdMutation,
   useAssignReferralByIdMutation,
   useDeleteReferralsByPatientIdMutation,
+  useUpdateReferralStatusMutation,
 } from './referralsApi';
 
 export {

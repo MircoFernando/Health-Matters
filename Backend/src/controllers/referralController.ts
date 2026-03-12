@@ -10,6 +10,7 @@ import {
 	practitionerIdParamsSchema,
 	referralIdParamsSchema,
 	updateReferralBodySchema,
+	updateReferralStatusBodySchema,
 } from '../Dtos/referral.dto';
 import { ValidationError, NotFoundError } from '../errors/errors';
 import { getAuth } from '@clerk/express';
@@ -243,6 +244,90 @@ export const assignReferralById = async (req: Request, res: Response, next: Next
 			}
 		} catch (notificationError) {
 			console.error('Failed to create referral assignment notification:', notificationError);
+		}
+
+		res.status(200).json(updatedReferral);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const updateReferralStatus = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const parsedParams = referralIdParamsSchema.safeParse(req.params);
+		const parsedBody = updateReferralStatusBodySchema.safeParse(req.body);
+
+		if (!parsedParams.success) {
+			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedParams.error)));
+		}
+
+		if (!parsedBody.success) {
+			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedBody.error)));
+		}
+
+		const { referralId } = parsedParams.data;
+		const { referralStatus } = parsedBody.data;
+
+		// Fetch current referral to compare status
+		const currentReferral = await Referral.findById(referralId);
+		if (!currentReferral) {
+			throw new NotFoundError('Referral not found');
+		}
+
+		// Prepare update object with status and appropriate date field
+		const updateData: any = { referralStatus };
+
+		if (referralStatus === 'accepted') {
+			updateData.acceptedDate = new Date();
+		} else if (referralStatus === 'rejected') {
+			updateData.rejectedDate = new Date();
+		}
+
+		const updatedReferral = await Referral.findByIdAndUpdate(
+			referralId,
+			{ $set: updateData },
+			{ new: true, runValidators: true }
+		);
+
+		if (!updatedReferral) {
+			throw new NotFoundError('Referral not found');
+		}
+
+		// Create notification when status changes (referral_triaged)
+		if (currentReferral.referralStatus !== referralStatus) {
+			try {
+				const patient = await User.findOne({ clerkUserId: updatedReferral.patientClerkUserId });
+
+				if (patient) {
+					let title = '';
+					let message = '';
+
+					if (referralStatus === 'accepted') {
+						title = 'Referral Accepted';
+						message = `Your referral has been accepted and is now in progress. Our team will be in touch with you shortly.`;
+					} else if (referralStatus === 'rejected') {
+						title = 'Referral Update';
+						message = `Your referral status has been updated. Please contact our team for more information.`;
+					}
+
+					await Notification.create({
+						recipientId: patient._id,
+						type: 'referral_triaged',
+						title,
+						message,
+						relatedEntityType: 'referral',
+						relatedEntityId: updatedReferral._id,
+						channels: {
+							email: { sent: false },
+							sms: { sent: false },
+							inApp: { read: false },
+						},
+						priority: 'high',
+					});
+				}
+			} catch (notificationError) {
+				console.error('Failed to create referral status notification:', notificationError);
+			}
 		}
 
 		res.status(200).json(updatedReferral);
