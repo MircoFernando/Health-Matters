@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { CalendarDays, UserRoundCheck, X, BellRing, FileText, CheckCircle2 } from "lucide-react";
-import { useGetNotificationsQuery } from "../../../store/api";
+import { useGetNotificationsQuery, useMarkNotificationReadMutation } from "../../../store/api";
 
 const formatDateGroup = (dateString) => {
   const date = new Date(dateString);
@@ -54,8 +54,7 @@ const getIcon = (type) => {
 
 export const Notifications = () => {
   const [selectedNote, setSelectedNote] = useState(null);
-  // Track IDs opened this session — once opened, dot disappears
-  const [readIds, setReadIds] = useState(new Set());
+  const [markRead] = useMarkNotificationReadMutation();
 
   const { data, isLoading, isError } = useGetNotificationsQuery(undefined, {
     pollingInterval: 10000,
@@ -66,10 +65,8 @@ export const Notifications = () => {
   const enrichedNotifications = useMemo(() => {
     return notifications.map((notification) => {
       const date = notification.createdAt || notification.updatedAt || new Date().toISOString();
-      // Unread if backend says unread AND user hasn't opened it this session
-      const isUnread =
-        notification.channels?.inApp?.read === false &&
-        !readIds.has(notification._id);
+      // Check if backend says unread
+      const isUnread = notification.channels?.inApp?.read === false;
       return {
         id: notification._id,
         title: notification.title,
@@ -80,17 +77,21 @@ export const Notifications = () => {
         unread: isUnread,
       };
     });
-  }, [notifications, readIds]);
+  }, [notifications]);
 
   const hasNotifications = enrichedNotifications.length > 0;
   const showEmptyState = !isLoading && !hasNotifications;
   const unreadCount = enrichedNotifications.filter((n) => n.unread).length;
 
-  const handleSelect = (note) => {
+  const handleSelect = async (note) => {
     setSelectedNote(note);
-    // Mark as read locally so the dot disappears immediately
+    // Mark as read on backend if not already read
     if (note.unread) {
-      setReadIds((prev) => new Set([...prev, note.id]));
+      try {
+        await markRead(note.id).unwrap();
+      } catch (error) {
+        console.error('Failed to mark notification as read:', error);
+      }
     }
   };
 
