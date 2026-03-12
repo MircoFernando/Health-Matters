@@ -134,6 +134,16 @@ export const updateReferralByPatientId = async (
 
 		const { patientId } = parsedParams.data;
 
+		// if referralStatus is being changed, we need to know the previous statuses
+		let oldStatusMap: Record<string, string> = {};
+		const newStatus = parsedBody.data.referralStatus as string | undefined;
+		if (newStatus !== undefined) {
+			const existing = await Referral.find({ patientClerkUserId: patientId });
+			existing.forEach((r) => {
+				oldStatusMap[String(r._id)] = r.referralStatus;
+			});
+		}
+
 		const updateResult = await Referral.updateMany(
 			{ patientClerkUserId: patientId },
 			{ $set: parsedBody.data },
@@ -145,6 +155,46 @@ export const updateReferralByPatientId = async (
 		}
 
 		const updatedReferrals = await Referral.find({ patientClerkUserId: patientId }).sort({ createdAt: -1 });
+
+		// create notifications for any referrals whose status changed
+		if (newStatus !== undefined) {
+			for (const r of updatedReferrals) {
+				const oldStatus = oldStatusMap[String(r._id)];
+				if (oldStatus && oldStatus !== r.referralStatus) {
+					try {
+						const patient = await User.findOne({ clerkUserId: r.patientClerkUserId });
+						if (patient) {
+							let title = '';
+							let message = '';
+							if (r.referralStatus === 'accepted') {
+								title = 'Referral Accepted';
+								message = `Your referral has been accepted and is now in progress. Our team will be in touch with you shortly.`;
+							} else if (r.referralStatus === 'rejected') {
+								title = 'Referral Update';
+								message = `Your referral status has been updated. Please contact our team for more information.`;
+							}
+							await Notification.create({
+								recipientId: patient._id,
+								type: 'referral_triaged',
+								title,
+								message,
+								relatedEntityType: 'referral',
+								relatedEntityId: r._id,
+								channels: {
+									email: { sent: false },
+									sms: { sent: false },
+									inApp: { read: false },
+								},
+								priority: 'high',
+							});
+						}
+					} catch (notificationError) {
+						console.error('Failed to create bulk referral status notification:', notificationError);
+					}
+				}
+			}
+		}
+
 		res.status(200).json({
 			message: 'Referrals updated successfully',
 			modifiedCount: updateResult.modifiedCount,
