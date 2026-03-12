@@ -11,6 +11,12 @@ import {
 } from '../Dtos/referral.dto';
 import { ValidationError, NotFoundError, UnauthorizedError } from '../errors/errors';
 import { getAuth } from '@clerk/express';
+import {
+	assignAppointmentToPractitioner,
+	confirmAppointmentFromReferral,
+	createPendingAppointmentForReferral,
+	rejectAppointmentFromReferral,
+} from '../utils/appointmentFlow';
 
 const formatValidationErrors = (error: ZodError) =>
 	error.issues.map((issue) => ({
@@ -77,6 +83,7 @@ export const createReferral = async (req: Request, res: Response, next: NextFunc
 		}
 
 		const newReferral = await Referral.create(parsedBody.data);
+		await createPendingAppointmentForReferral(newReferral);
 
 		res.status(201).json(newReferral);
 	} catch (error) {
@@ -172,6 +179,12 @@ export const updateReferralById = async (req: Request, res: Response, next: Next
 		}
 
 		const { referralId } = parsedParams.data;
+		const existingReferral = await Referral.findById(referralId);
+
+		if (!existingReferral) {
+			throw new NotFoundError('Referral not found');
+		}
+
 		const updateFields: Record<string, unknown> = { ...parsedBody.data };
 
 		// When a practitioner accepts, record their ID from the token (never trust the client for this)
@@ -192,6 +205,20 @@ export const updateReferralById = async (req: Request, res: Response, next: Next
 
 		if (!updatedReferral) {
 			throw new NotFoundError('Referral not found');
+		}
+
+		if (parsedBody.data.referralStatus === 'accepted') {
+			await confirmAppointmentFromReferral({
+				referral: updatedReferral,
+				practitionerClerkUserId: auth.userId,
+			});
+		}
+
+		if (parsedBody.data.referralStatus === 'rejected') {
+			await rejectAppointmentFromReferral({
+				referral: updatedReferral,
+				practitionerClerkUserId: existingReferral.practitionerClerkUserId,
+			});
 		}
 
 		res.status(200).json(updatedReferral);
@@ -232,6 +259,12 @@ export const assignReferralById = async (req: Request, res: Response, next: Next
 		if (!updatedReferral) {
 			throw new NotFoundError('Referral not found');
 		}
+
+		await assignAppointmentToPractitioner({
+			referral: updatedReferral,
+			practitionerClerkUserId,
+			assignedByClerkUserId: auth.userId || undefined,
+		});
 
 		res.status(200).json(updatedReferral);
 	} catch (error) {
