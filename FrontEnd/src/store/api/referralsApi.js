@@ -45,6 +45,14 @@ export const referralsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Referrals'],
     }),
+    updateReferralStatus: builder.mutation({
+      query: ({ referralId, referralStatus }) => ({
+        url: `/referrals/${referralId}/status`,
+        method: 'PUT',
+        body: { referralStatus },
+      }),
+      invalidatesTags: ['Referrals'],
+    }),
   }),
   overrideExisting: false,
 });
@@ -57,4 +65,5 @@ export const {
   useUpdateReferralsByPatientIdMutation,
   useAssignReferralByIdMutation,
   useDeleteReferralsByPatientIdMutation,
+  useUpdateReferralStatusMutation,
 } = referralsApi;

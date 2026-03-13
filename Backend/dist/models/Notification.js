@@ -48,6 +48,7 @@ const NotificationSchema = new mongoose_1.Schema({
             'referral_triaged',
             'referral_assigned',
             'appointment_scheduled',
+            'appointment_completed',
             'appointment_reminder_24h',
             'appointment_reminder_1h',
             'appointment_cancelled',

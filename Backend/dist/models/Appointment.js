@@ -42,14 +42,14 @@ const AppointmentSchema = new mongoose_1.Schema({
         required: true
     },
     practitionerId: {
-        type: mongoose_1.Schema.Types.ObjectId,
+        type: String,
         ref: 'User',
         required: true
     },
     employeeId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        type: String,
+        required: true,
+        index: true
     },
     // Scheduling
     scheduledDate: {
