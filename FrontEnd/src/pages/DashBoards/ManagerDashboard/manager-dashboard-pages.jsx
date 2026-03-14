@@ -257,7 +257,6 @@ const initialForm = {
 export const ManagerReferralSubmission = () => {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const [createReferral, { isLoading: submitting }] = useCreateReferralMutation();
@@ -878,4 +877,3 @@ export const ManagerAccessibility = () => {
 export const ManagerTestBudget   = () => <div className="p-8 max-w-4xl mx-auto"><h1 className="text-2xl font-bold text-slate-800">Budget</h1></div>;
 export const ManagerTestInsights = () => <div className="p-8 max-w-4xl mx-auto"><h1 className="text-2xl font-bold text-slate-800">Insights</h1></div>;
 export const ManagerTestProfile  = () => <div className="p-8 max-w-4xl mx-auto"><h1 className="text-2xl font-bold text-slate-800">Profile</h1></div>;
-export const ManagerTestTeam     = () => <div className="p-8 max-w-4xl mx-auto"><h1 className="text-2xl font-bold text-slate-800">Team</h1></div>;
