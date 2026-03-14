@@ -67,9 +67,9 @@ const EmployeeDashboardLayout = () => {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-emerald-50">
-          <Sidebar className="border-r border-emerald-800 bg-emerald-900 text-white">
-            <SidebarHeader className="flex h-16 items-center border-b border-emerald-800 px-6">
+        <div data-dashboard="employee" className="flex min-h-screen w-full bg-emerald-50 dark:bg-linear-to-br dark:from-slate-950 dark:via-emerald-950/25 dark:to-slate-950 dark:text-slate-100">
+          <Sidebar className="border-r border-emerald-800 bg-emerald-900 text-white dark:border-emerald-900 dark:bg-slate-950">
+            <SidebarHeader className="flex h-16 items-center border-b border-emerald-800 px-6 dark:border-emerald-900">
               <div className="flex w-full items-center gap-3">
                 <img
                   src={logoTrans}
@@ -116,8 +116,8 @@ const EmployeeDashboardLayout = () => {
               </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-emerald-800 p-4">
-              <div className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-emerald-800">
+            <SidebarFooter className="border-t border-emerald-800 p-4 dark:border-emerald-900">
+              <div className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-emerald-800 dark:hover:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <UserButton
                     appearance={{
@@ -137,23 +137,23 @@ const EmployeeDashboardLayout = () => {
           </Sidebar>
 
           <main className="flex flex-1 flex-col overflow-hidden">
-            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-emerald-200 bg-white px-6 shadow-sm">
+            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-emerald-200 bg-white px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="text-emerald-900 hover:bg-emerald-50 hover:text-emerald-700" />
+                <SidebarTrigger className="text-emerald-900 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-200 dark:hover:bg-slate-800 dark:hover:text-emerald-100" />
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-800">Dashboard</h2>
-                  <p className="text-xs text-slate-500">
+                  <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Dashboard</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-300">
                     Signed in as {user?.fullName || user?.firstName || "User"}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                <span className="text-sm font-medium text-slate-600">Online</span>
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Online</span>
               </div>
             </header>
 
-            <div className="flex-1 overflow-auto p-6">
+            <div className="flex-1 overflow-auto p-6 text-slate-900 dark:text-slate-100">
               <Outlet />
             </div>
           </main>

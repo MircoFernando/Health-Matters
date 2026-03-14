@@ -69,9 +69,9 @@ const PractitionerDashboardLayout = () => {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-blue-50">
-          <Sidebar className="border-r border-blue-800 bg-blue-800 text-white">
-            <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6">
+        <div data-dashboard="practitioner" className="flex min-h-screen w-full bg-blue-50 dark:bg-linear-to-br dark:from-slate-950 dark:via-blue-950/25 dark:to-slate-950 dark:text-slate-100">
+          <Sidebar className="border-r border-blue-800 bg-blue-800 text-white dark:border-blue-900 dark:bg-slate-950">
+            <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6 dark:border-blue-900">
               <div className="flex w-full items-center gap-3">
                 <img
                   src={logoTrans}
@@ -118,8 +118,8 @@ const PractitionerDashboardLayout = () => {
               </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-amber-800 p-4">
-              <div className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-amber-800">
+            <SidebarFooter className="border-t border-amber-800 p-4 dark:border-blue-900">
+              <div className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-amber-800 dark:hover:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <UserButton
                     appearance={{
@@ -139,23 +139,23 @@ const PractitionerDashboardLayout = () => {
           </Sidebar>
 
           <main className="flex flex-1 flex-col overflow-hidden">
-            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-blue-200 bg-white px-6 shadow-sm">
+            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-blue-200 bg-white px-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="bg-blue-700 text-white hover:bg-blue-800" />
+                <SidebarTrigger className="bg-blue-700 text-white hover:bg-blue-800 dark:bg-slate-800 dark:hover:bg-slate-700" />
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-800">Dashboard</h2>
-                  <p className="text-xs text-slate-500">
+                  <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Dashboard</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-300">
                     Signed in as {user?.fullName || user?.firstName || "User"}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                <span className="text-sm font-medium text-slate-600">Online</span>
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Online</span>
               </div>
             </header>
 
-            <div className="flex-1 overflow-auto p-6">
+            <div className="flex-1 overflow-auto p-6 text-slate-900 dark:text-slate-100">
               <Outlet />
             </div>
           </main>

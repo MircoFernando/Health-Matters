@@ -10,6 +10,8 @@
 // };
 
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setThemeMode } from "../../../store/themeSlice";
 import { 
   Moon, 
   Sun, 
@@ -20,7 +22,9 @@ import {
 } from "lucide-react";
 
 export const Accessibility = () => {
-  const [darkMode, setDarkMode] = useState(false);
+  const dispatch = useDispatch();
+  const themeMode = useSelector((state) => state.theme.mode);
+  const darkMode = themeMode === "dark";
   const [highContrast, setHighContrast] = useState(false);
   const [fontSize, setFontSize] = useState(14);
 
@@ -50,13 +54,13 @@ export const Accessibility = () => {
             </div>
             <div className="flex bg-slate-100 p-1 rounded-lg">
               <button 
-                onClick={() => setDarkMode(false)}
+                onClick={() => dispatch(setThemeMode("light"))}
                 className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${!darkMode ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 Light
               </button>
               <button 
-                onClick={() => setDarkMode(true)}
+                onClick={() => dispatch(setThemeMode("dark"))}
                 className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${darkMode ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 Dark

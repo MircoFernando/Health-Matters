@@ -66,12 +66,12 @@ const AdminDashboardLayout = () => {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-linear-to-br from-slate-100 via-blue-50/60 to-slate-100">
+        <div data-dashboard="admin" className="flex min-h-screen w-full bg-linear-to-br from-slate-100 via-blue-50/60 to-slate-100 dark:bg-linear-to-br dark:from-slate-950 dark:via-blue-950/30 dark:to-slate-950 dark:text-slate-100">
           {/* SIDEBAR: Blue Theme Applied Here */}
-          <Sidebar className="border-r border-blue-800 bg-blue-900 text-white">
+          <Sidebar className="border-r border-blue-800 bg-blue-900 text-white dark:border-blue-900 dark:bg-slate-950">
             
             {/* Header */}
-            <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6">
+            <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6 dark:border-blue-900">
               <div className="flex w-full items-center gap-3">
                 <img
                   src={logoTrans}
@@ -120,8 +120,8 @@ const AdminDashboardLayout = () => {
             </SidebarContent>
 
             {/* Footer */}
-            <SidebarFooter className="border-t border-blue-800 p-4">
-              <div className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-blue-800">
+            <SidebarFooter className="border-t border-blue-800 p-4 dark:border-blue-900">
+              <div className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-blue-800 dark:hover:bg-slate-900">
                 <div className="flex items-center gap-3">
                   <UserButton 
                     appearance={{
@@ -145,24 +145,24 @@ const AdminDashboardLayout = () => {
           {/* MAIN CONTENT */}
           <main className="flex flex-1 flex-col overflow-hidden">
             {/* Top Navbar */}
-            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-6 shadow-sm backdrop-blur">
+            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-6 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="text-blue-900 hover:bg-blue-50 hover:text-blue-700" />
+                <SidebarTrigger className="text-blue-900 hover:bg-blue-50 hover:text-blue-700 dark:text-blue-200 dark:hover:bg-slate-800 dark:hover:text-blue-100" />
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-800">Dashboard</h2>
-                  <p className="text-xs text-slate-500">
+                  <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Dashboard</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-300">
                     Signed in as {user?.fullName || user?.firstName || "User"}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                <span className="text-sm font-medium text-slate-600">Online</span>
+                <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Online</span>
               </div>
             </header>
 
             {/* Page Content Outlet */}
-            <div className="flex-1 overflow-auto p-6 [--admin-btn:#2563eb] [&_button]:font-medium [&_button]:transition-colors [&_button:not([data-sidebar=trigger])]:rounded-lg [&_button:not([data-sidebar=trigger])]:border [&_button:not([data-sidebar=trigger])]:border-blue-700 [&_button:not([data-sidebar=trigger])]:bg-blue-600 [&_button:not([data-sidebar=trigger])]:text-white [&_button:not([data-sidebar=trigger])]:hover:bg-blue-700 [&_button:not([data-sidebar=trigger])]:hover:text-white">
+            <div className="flex-1 overflow-auto p-6 text-slate-900 dark:text-slate-100 [--admin-btn:#2563eb] [&_button]:font-medium [&_button]:transition-colors [&_button:not([data-sidebar=trigger])]:rounded-lg [&_button:not([data-sidebar=trigger])]:border [&_button:not([data-sidebar=trigger])]:border-blue-700 [&_button:not([data-sidebar=trigger])]:bg-blue-600 [&_button:not([data-sidebar=trigger])]:text-white [&_button:not([data-sidebar=trigger])]:hover:bg-blue-700 [&_button:not([data-sidebar=trigger])]:hover:text-white">
               <Outlet />
             </div>
           </main>

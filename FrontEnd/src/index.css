@@ -269,3 +269,103 @@ button:focus-visible {
     background: rgb(100 116 139); /* slate-500 */
   }
 }
+
+@layer components {
+  /* Dashboard-only dark mode consistency layer */
+  .dark [data-dashboard] {
+    color: rgb(226 232 240);
+  }
+
+  /* Core surfaces */
+  .dark [data-dashboard] .bg-white,
+  .dark [data-dashboard] [class*=" bg-white"],
+  .dark [data-dashboard] [class^="bg-white"] {
+    background-color: rgb(15 23 42) !important;
+  }
+
+  .dark [data-dashboard] .bg-slate-50,
+  .dark [data-dashboard] .bg-slate-100,
+  .dark [data-dashboard] .bg-gray-50,
+  .dark [data-dashboard] .bg-blue-50,
+  .dark [data-dashboard] .bg-emerald-50,
+  .dark [data-dashboard] .bg-red-50,
+  .dark [data-dashboard] .bg-rose-50,
+  .dark [data-dashboard] .bg-amber-50 {
+    background-color: rgb(30 41 59) !important;
+  }
+
+  /* Borders */
+  .dark [data-dashboard] .border-slate-100,
+  .dark [data-dashboard] .border-slate-200,
+  .dark [data-dashboard] .border-slate-300,
+  .dark [data-dashboard] .border-gray-100,
+  .dark [data-dashboard] .border-gray-200,
+  .dark [data-dashboard] .border-blue-100,
+  .dark [data-dashboard] .border-emerald-100,
+  .dark [data-dashboard] .border-red-200,
+  .dark [data-dashboard] .border-rose-200,
+  .dark [data-dashboard] .border-amber-200 {
+    border-color: rgb(71 85 105) !important;
+  }
+
+  /* Text readability */
+  .dark [data-dashboard] .text-slate-900,
+  .dark [data-dashboard] .text-slate-800,
+  .dark [data-dashboard] .text-slate-700,
+  .dark [data-dashboard] .text-gray-900,
+  .dark [data-dashboard] .text-gray-800,
+  .dark [data-dashboard] .text-gray-700 {
+    color: rgb(241 245 249) !important;
+  }
+
+  .dark [data-dashboard] .text-slate-600,
+  .dark [data-dashboard] .text-slate-500,
+  .dark [data-dashboard] .text-slate-400,
+  .dark [data-dashboard] .text-gray-600,
+  .dark [data-dashboard] .text-gray-500,
+  .dark [data-dashboard] .text-gray-400 {
+    color: rgb(148 163 184) !important;
+  }
+
+  /* Inputs/selects/textareas and modal containers */
+  .dark [data-dashboard] input,
+  .dark [data-dashboard] select,
+  .dark [data-dashboard] textarea {
+    background-color: rgb(15 23 42) !important;
+    color: rgb(241 245 249) !important;
+    border-color: rgb(71 85 105) !important;
+  }
+
+  .dark [data-dashboard] input::placeholder,
+  .dark [data-dashboard] textarea::placeholder {
+    color: rgb(148 163 184) !important;
+  }
+
+  .dark [data-dashboard] [role="dialog"],
+  .dark [data-dashboard] .shadow-xl,
+  .dark [data-dashboard] .shadow-2xl {
+    background-color: rgb(15 23 42) !important;
+  }
+
+  /* Table consistency */
+  .dark [data-dashboard] thead,
+  .dark [data-dashboard] tbody tr:hover {
+    background-color: rgb(30 41 59) !important;
+  }
+
+  /* Neutral buttons and outlines */
+  .dark [data-dashboard] button[class*="border"],
+  .dark [data-dashboard] a[class*="border"] {
+    border-color: rgb(71 85 105) !important;
+  }
+
+  .dark [data-dashboard] button[class*="bg-slate"],
+  .dark [data-dashboard] button[class*="bg-gray"] {
+    color: rgb(241 245 249) !important;
+  }
+
+  .dark [data-dashboard] button:disabled,
+  .dark [data-dashboard] input:disabled {
+    opacity: 0.65;
+  }
+}

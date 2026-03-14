@@ -42,6 +42,7 @@ import { ManagerTestTeam } from "./pages/DashBoards/ManagerDashboard/test-team.j
 import { ManagerTestInsights } from "./pages/DashBoards/ManagerDashboard/test-insights.jsx";
 import { ManagerTestProfile } from "./pages/DashBoards/ManagerDashboard/test-profile.jsx";
 import { ManagerTestBudget } from "./pages/DashBoards/ManagerDashboard/test-budget.jsx";
+import { ManagerAccessibility } from "./pages/DashBoards/ManagerDashboard/manager-accessibility.jsx";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { Provider } from "react-redux";
 import SignInPage from "./pages/Login/sign-in.jsx";
@@ -49,6 +50,7 @@ import SignUpPage from "./pages/Login/sign-up.jsx";
 import MainLayout from "./layout/main-layout.jsx";
 import { ProtectedLayout } from "./layout/ProtectedLayout.jsx";
 import { store } from "./store";
+import { ThemeSync } from "./components/theme-sync.jsx";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -116,6 +118,7 @@ const ClerkWithRoutes = () => {
               <Route path="insights" element={<ManagerTestInsights />} />
               <Route path="budget" element={<ManagerTestBudget />} />
               <Route path="profile" element={<ManagerTestProfile />} />
+              <Route path="accessibility" element={<ManagerAccessibility />} />
             </Route>
           </Route>
         </Route>
@@ -128,6 +131,7 @@ const ClerkWithRoutes = () => {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
+      <ThemeSync />
       <BrowserRouter>
         <ClerkWithRoutes />
       </BrowserRouter>

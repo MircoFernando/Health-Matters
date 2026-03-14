@@ -8,10 +8,14 @@ import {
   Phone,
   Save,
   Shield,
+  Moon,
+  Sun,
   User,
 } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { useGetMeQuery, useUpdateMeMutation } from "@/store/api";
+import { useDispatch, useSelector } from "react-redux";
+import { setThemeMode } from "../../../store/themeSlice";
 
 const InputField = ({ label, name, value, onChange, readOnly = false, type = "text", placeholder = "" }) => (
   <div>
@@ -39,6 +43,8 @@ const InputField = ({ label, name, value, onChange, readOnly = false, type = "te
 export const TestSettings = () => {
   const { user: clerkUser } = useUser();
   const { data: me, isLoading, isError, error } = useGetMeQuery();
+  const dispatch = useDispatch();
+  const themeMode = useSelector((state) => state.theme.mode);
 
   const [updateMe, { isLoading: saving, isSuccess, isError: saveError, error: saveErrorData, reset }] =
     useUpdateMeMutation();
@@ -188,6 +194,29 @@ export const TestSettings = () => {
               <div className="flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-sm text-slate-700">
                 <Shield className="h-4 w-4 text-blue-600" />
                 <span className="truncate">{me?.department || "No department set"}</span>
+              </div>
+              <div className="rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-3">
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-blue-700">Profile Display</p>
+                <div className="flex rounded-lg border border-blue-100 bg-white p-1">
+                  <button
+                    type="button"
+                    onClick={() => dispatch(setThemeMode('light'))}
+                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                      themeMode === 'light' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <Sun className="h-3.5 w-3.5" /> Light
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => dispatch(setThemeMode('dark'))}
+                    className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                      themeMode === 'dark' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <Moon className="h-3.5 w-3.5" /> Dark
+                  </button>
+                </div>
               </div>
             </div>
 
