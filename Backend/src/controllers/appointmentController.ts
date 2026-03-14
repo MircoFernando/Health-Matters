@@ -2,6 +2,12 @@ import Appointment from "../models/Appointment";
 import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
 
+/*
+ Team C - Employee appointment timeline retrieval (TMC-003) . Done by Vinuki and Senuthi, and Tharusha
+ Team E - Employee dashboard upcoming appointments metric support (TME-003) . Done by Methmi
+ Team G - Practitioner appointment list, responses, cancellation, and performance counters support (TMG-001, TMG-003, TMG-004) . Done by Charin, Helika, and Vinuli
+*/
+
 const toPractitionerView = (appointment: any) => {
   const referral = appointment.referralId && typeof appointment.referralId === "object" ? appointment.referralId : null;
   const normalizedStatus = appointment.status === "scheduled" ? "assigned" : appointment.status;

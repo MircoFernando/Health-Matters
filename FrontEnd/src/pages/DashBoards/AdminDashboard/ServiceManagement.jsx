@@ -39,6 +39,10 @@ import {
   useDeleteServiceByIdMutation,
 } from "@/store/api";
 
+/*
+ Team H - Service catalogue table, service creation, editing, deactivation, and service KPI summary bar (TMH-001, TMH-002, TMH-003, TMH-004, TMH-005) . Done by Piushan, Vishal, Tenura, Shamal, and Usara
+*/
+
 const CATEGORIES = [
   { value: "all", label: "All Services" },
   { value: "occupational_health", label: "Occupational Health" },

@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+/*
+ Team J - Patient search, patient detail modal, and patient statistics cards (TMJ-005, TMJ-006, TMJ-007) . Done by Senithi, Yahanima, Dulmin, Akith, and Irindu
+*/
+
 export const PractitionerTestPatients = () => {
 
   const [search, setSearch] = useState("");

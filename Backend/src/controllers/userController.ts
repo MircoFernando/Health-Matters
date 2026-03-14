@@ -13,6 +13,12 @@ import {
 import { ValidationError, NotFoundError, UnauthorizedError, ForbiddenError, BadRequestError } from '../errors/errors';
 import { getAuth, clerkClient } from '@clerk/express';
 
+/*
+ Team B - Manager personal details update workflow (TMB-005) . Done by Tevin and Ovin
+ Team E - Employee profile update workflow (TME-002) . Done by Praneepa and Methmi
+ Team F - Admin access, user listing, creation, editing, and role management workflows (TMF-001, TMF-002, TMF-003, TMF-004) . Done by Mirco, Danuja, Isuru, Upeka, and Idusha
+*/
+
 const formatValidationErrors = (error: ZodError) =>
 	error.issues.map((issue) => ({
 		field: issue.path.join('.'),

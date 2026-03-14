@@ -3,6 +3,10 @@ import { Link, useSearchParams } from "react-router";
 import { Loader2, Star } from "lucide-react";
 import { useCreateReviewMutation, useGetReviewsQuery } from "../../../store/api/reviewsApi";
 
+/*
+ Team J - Recent review cards, review submission form, and star-rating interaction UI (TMJ-001, TMJ-002, TMJ-003) . Done by Yahanima, Senithi, Irindu, Dulmin, and Akith
+*/
+
 const initialFormState = {
   patientName: "",
   message: "",

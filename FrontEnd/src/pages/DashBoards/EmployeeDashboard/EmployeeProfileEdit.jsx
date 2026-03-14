@@ -13,6 +13,11 @@ import { useNavigate } from "react-router";
 import { useUser } from "@clerk/clerk-react";
 import { useGetUsersQuery, useUpdateMeMutation } from "../../../store/api";
 
+/*
+ Team E - Employee personal details edit form and persistence flow (TME-002) . Done by Praneepa and Methmi
+ Team B - Manager-side personal details update UX parity patterns reused here (TMB-005) . Done by Tevin and Ovin
+*/
+
 // ---------------------------------------------------------------------------
 // EditField — defined OUTSIDE the parent component so it never remounts,
 // which prevents the cursor-jumping / focus-loss bug on every keystroke.

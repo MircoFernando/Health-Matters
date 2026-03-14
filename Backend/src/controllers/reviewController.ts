@@ -3,6 +3,10 @@ import { getAuth } from '@clerk/express';
 import Review from '../models/Review';
 import { createReviewBodySchema, getReviewsQuerySchema } from '../Dtos/review.dto';
 
+/*
+ Team J - Practitioner review listing, creation, and star-rating persistence APIs (TMJ-001, TMJ-002, TMJ-003) . Done by Yahanima, Senithi, Irindu, Dulmin, and Akith
+*/
+
 export const getReviewsForCurrentPractitioner = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const auth = getAuth(req);

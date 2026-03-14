@@ -18,6 +18,12 @@ import {
 
 import { Link } from "react-router";
 
+/*
+ Team C - Referral history summary and timeline support (TMC-002, TMC-003) . Done by Vinuki and Senuthi, and Tharusha
+ Team C - Total referrals and pending referrals dashboard indicators (TMC-006, TMC-007) . Done by Vinuki and Senuthi, and Tharusha
+ Team E - Upcoming appointments and advice sheet activity stat cards (TME-003) . Done by Methmi
+*/
+
 /* ─────────────────────────────────────────────
    Spinner — inline circular progress indicator
 ───────────────────────────────────────────── */

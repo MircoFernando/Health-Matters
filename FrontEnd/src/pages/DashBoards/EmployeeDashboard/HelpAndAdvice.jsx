@@ -9,6 +9,10 @@ import {
   AlertTriangle
 } from "lucide-react";
 
+/*
+ Team I - Help and advice page, referral list/status cards, clinical summary view, and wellbeing guidance flow (TMI-001, TMI-002, TMI-003, TMI-004, TMI-005) . Done by Sasithi and Yovinma
+*/
+
 export const HelpAndAdvice = () => {
 
   const [selectedReferral, setSelectedReferral] = useState(null);

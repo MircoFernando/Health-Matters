@@ -10,6 +10,10 @@ import {
 } from "@/store/api";
 import { toast } from "sonner";
 
+/*
+ Team F - Admin role console access, user listing/filtering, user creation, and user detail editing workflows (TMF-001, TMF-002, TMF-003, TMF-004) . Done by Mirco, Danuja, Isuru, Upeka, and Idusha
+*/
+
 const ROLE_OPTIONS = ["admin", "manager", "practitioner", "employee"];
 
 const emptyCreateForm = {
@@ -127,10 +131,22 @@ export const TestUsers = () => {
     }
   };
 
-  const handleQuickRoleChange = async (userId, role) => {
+  const handleQuickRoleChange = async (user, nextRole) => {
+    if (!user?._id || !nextRole || user.role === nextRole) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Change role for ${getName(user)} from ${user.role} to ${nextRole}?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     try {
-      await updateUserRole({ userId, role }).unwrap();
-      toast.success(`Role changed to ${role}.`);
+      await updateUserRole({ userId: user._id, role: nextRole }).unwrap();
+      toast.success(`Role changed to ${nextRole}.`);
     } catch (err) {
       toast.error(err?.data?.message ?? "Failed to update role.");
     }
@@ -303,7 +319,7 @@ export const TestUsers = () => {
                     <td className="px-4 py-3">
                       <select
                         value={user.role}
-                        onChange={(e) => handleQuickRoleChange(user._id, e.target.value)}
+                        onChange={(e) => handleQuickRoleChange(user, e.target.value)}
                         disabled={savingRole}
                         className="rounded-md border border-blue-200 bg-white px-2 py-1 text-xs text-slate-900 shadow-sm"
                       >

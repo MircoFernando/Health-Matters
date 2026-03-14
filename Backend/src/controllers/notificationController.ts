@@ -4,6 +4,11 @@ import Notification from '../models/Notification';
 import { User } from '../models/User';
 import { getNotificationsQuerySchema, notificationIdParamsSchema } from '../Dtos/notification.dto';
 
+/*
+ Team D - Manager notification retrieval and read-state workflow (TMD-001) . Done by Ramiru
+ Team E - Employee notification center polling and read-state workflow (TME-001) . Done by Abhiman and Methmi
+*/
+
 export const getNotificationsForCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const auth = getAuth(req);

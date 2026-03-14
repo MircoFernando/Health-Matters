@@ -13,6 +13,10 @@ import { useGetMeQuery } from "../../../store/api";
 import { useDispatch, useSelector } from "react-redux";
 import { setThemeMode } from "../../../store/themeSlice";
 
+/*
+ Team G - Practitioner profile details single-page view with role-specific identity data (TMG-006) . Done by Helika
+*/
+
 const displayValue = (value) => (value && String(value).trim() ? value : "—");
 
 const DisplayField = ({ label, value }) => (

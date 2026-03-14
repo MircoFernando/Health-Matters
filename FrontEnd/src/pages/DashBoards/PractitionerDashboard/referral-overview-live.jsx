@@ -10,6 +10,10 @@ import {
   useUpdateReferralByIdMutation,
 } from '@/store/api';
 
+/*
+ Team G - Unified practitioner referral viewing and management dashboard with search/filter context (TMG-005) . Done by Charin, Helika, and Vinuli
+*/
+
 const getDisplayName = (user) => {
   if (!user) return 'Unknown';
 

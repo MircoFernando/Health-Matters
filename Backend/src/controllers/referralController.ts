@@ -17,6 +17,15 @@ import {
 import { ValidationError, NotFoundError, UnauthorizedError, BadRequestError } from '../errors/errors';
 import { getAuth } from '@clerk/express';
 
+/*
+ Team A - Manager referral submission and lifecycle workflows (TMA-001, TMA-002, TMA-003, TMA-004, TMA-005, TMA-006) . Done by Mahdi and Savindu
+ Team C - Employee self-referral and referral history workflows (TMC-001, TMC-002, TMC-006, TMC-007) . Done by Vinuki and Senuthi, and Tharusha
+ Team D - Manager referral notifications, cancellation, and analytics data foundations (TMD-001, TMD-002, TMD-003, TMD-004, TMD-005) . Done by Ramiru, Sajana, and Omidu
+ Team F - Admin referral intake and assignment workflow (TMF-005) . Done by Danuja and Isuru
+ Team I - Employee referral guidance and status visibility features (TMI-001, TMI-002, TMI-003, TMI-004, TMI-005) . Done by Sasithi and Yovinma
+ Team G - Practitioner referral handoff and referral management integration (TMG-002, TMG-005) . Done by Vinuli, Charin, and Helika
+*/
+
 const formatValidationErrors = (error: ZodError) =>
 	error.issues.map((issue) => ({
 		field: issue.path.join('.'),

@@ -2,6 +2,11 @@ import React, { useMemo, useState } from "react";
 import { CalendarDays, UserRoundCheck, X, BellRing, FileText, CheckCircle2 } from "lucide-react";
 import { useGetNotificationsQuery } from "../../../store/api";
 
+/*
+ Team E - Employee in-app notifications page with polling and grouped rendering (TME-001) . Done by Abhiman and Methmi
+ Team D - Shared manager/employee notification visualization behavior support (TMD-001) . Done by Ramiru
+*/
+
 const formatDateGroup = (dateString) => {
   const date = new Date(dateString);
   const today = new Date();

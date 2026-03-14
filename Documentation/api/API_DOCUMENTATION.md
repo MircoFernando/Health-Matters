@@ -1,457 +1,392 @@
-# Health Matters API Documentation
+﻿# Health Matters API Documentation
 
 ## 1) Overview
-This document defines the current backend API architecture for:
-- `User`
-- `Referral`
-- `Service`
+This document reflects the current implemented API surface for the Health Matters backend and the matching frontend RTK Query integration.
 
-It also explains:
-- How controllers and routers are structured
-- How routes are mounted in `Backend/src/index.ts`
-- How to add a new schema + controller + router + route registration
-- How to add a new endpoint
-- How to add a new frontend API in the RTK Query store
+Implemented backend modules:
+- Users
+- Referrals
+- Services
+- Appointments
+- Notifications
+- Medical Records
+- Reviews
+- Webhooks
+
+Base API URL:
+- http://localhost:3000/api
 
 ---
 
-## 2) Backend Architecture
+## 2) Server Architecture
 
-### 2.1 Server Entry (`Backend/src/index.ts`)
-The backend server currently configures:
-1. `dotenv`
+### 2.1 Server Entry and Middleware Order
+Backend server setup in Backend/src/index.ts:
+1. dotenv configuration
 2. CORS middleware
-3. Webhooks route (`/api/webhooks`)
-4. JSON parser + logger middleware + Clerk middleware
-5. Feature routers:
-   - `/api/users`
-   - `/api/referrals`
-   - `/api/services`
-6. Global error handler (`globalErrorHandlingMiddleware`)
-7. DB connection and server start
+3. Webhooks route (/api/webhooks)
+4. JSON body parser
+5. request logger middleware
+6. Clerk middleware (authentication context)
+7. feature routers
+8. global error handling middleware
+9. DB connection and server startup
 
-### 2.2 Error Handling Pattern
-Use typed errors from `Backend/src/errors/errors.ts`:
-- `NotFoundError`
-- `ValidationError`
-- `BadRequestError`
-- `UnauthorizedError`
-- `ForbiddenError`
+### 2.2 Mounted Routes
+- /api/users
+- /api/referrals
+- /api/services
+- /api/appointments
+- /api/notifications
+- /api/medical-records
+- /api/reviews
+- /api/webhooks
 
-Controllers should `throw` typed errors and call `next(error)` in `catch`.
-The global middleware maps them to HTTP status codes.
-
-### 2.3 Validation Pattern
-Request validation uses Zod DTOs in `Backend/src/Dtos/*`.
-Common flow in controllers:
-1. `safeParse(req.params | req.query | req.body)`
-2. If parse fails, throw `ValidationError`
-3. Execute DB operation
-4. Return JSON response
+### 2.3 Security and Validation
+- Authentication middleware: requireClerkAuth (route-level)
+- Authorization middleware: requireAdminRole (admin-only endpoints)
+- Validation: Zod DTO schemas in Backend/src/Dtos
+- Error handling: typed app errors mapped by globalErrorHandlingMiddleware
 
 ---
 
-## 3) Schemas (Mongoose Models)
+## 3) Implemented Endpoint Reference
 
-## 3.1 User Schema (`Backend/src/models/User.ts`)
-Key fields:
-- `userName?: string`
-- `firstName?: string`
-- `lastName?: string`
-- `phone?: string`
-- `dateOfBirth?: Date`
-- `email: string` (required, unique)
-- `password?: string` (min length 8)
-- `role: "admin" | "practitioner" | "manager" | "employee"` (default `employee`)
-- `address?: { line1, line2, city, postcode }`
-- `department?: string`
-- `isActive: boolean` (default `true`)
-- `preferences.notifications.email: boolean` (default `true`)
-- `preferences.notifications.sms: boolean` (default `false`)
-- `clerkUserId: string` (required, unique)
-- `timestamps: true`
+## 3.1 Users API
+Router: Backend/src/routes/userRoutes.ts
 
-### User DTO (`Backend/src/Dtos/user.dto.ts`)
-- `createUserBodySchema`
-- `updateUserBodySchema`
-- `getUsersQuerySchema`
+- GET /api/users
+  - Admin only
+  - Query filters include role, isActive, clerkUserId, email
 
----
+- GET /api/users/me
+  - Authenticated user profile by Clerk token identity
 
-## 3.2 Referral Schema (`Backend/src/models/Referral.ts`)
-Key fields:
-- `patientClerkUserId: string` (required)
-- `submittedByClerkUserId?: string`
-- `practitionerClerkUserId?: string`
-- `serviceType?: string`
-- `referralReason?: string`
-- `referralStatus: "pending" | "accepted" | "rejected"` (default `pending`)
-- `notes?: string`
-- `assignedbyClerkUserId?: string`
-- `assignedDate?: Date`
-- `acceptedDate?: Date`
-- `rejectedDate?: Date`
-- `completedDate?: Date`
-- `timestamps: true`
+- PUT /api/users/me
+  - Authenticated self-profile update
 
-### Referral DTO (`Backend/src/Dtos/referral.dto.ts`)
-- Params schemas:
-  - `patientIdParamsSchema`
-  - `practitionerIdParamsSchema`
-  - `referralIdParamsSchema`
-- Body schemas:
-  - `createReferralBodySchema`
-  - `updateReferralBodySchema`
-  - `assignReferralBodySchema`
+- POST /api/users
+  - Admin only, create user
 
----
+- GET /api/users/:userId
+  - Admin only, fetch single user
 
-## 3.3 Service Schema (`Backend/src/models/Service.ts`)
-Key fields:
-- `name: string` (required)
-- `code: string` (required, uppercase, unique index)
-- `description?: string`
-- `category:`
-  - `occupational_health`
-  - `mental_health`
-  - `physiotherapy`
-  - `health_screening`
-  - `counselling`
-  - `ergonomic_assessment`
-- `defaultDuration: number` (default 30, min 15, max 240)
-- `pricing?: { internalCost?, clientCharge?, currency }`
-- `requiresInitialQuestionnaire: boolean`
-- `initialQuestionnaireTemplate?: { title, questions[] }`
-- `requiresFollowUpQuestionnaire: boolean`
-- `followUpQuestionnaireTemplate?: { title, questions[] }`
-- `availableForSelfReferral: boolean`
-- `requiresManagerApproval: boolean`
-- `qualifiedPractitionerIds: ObjectId[]` (ref `User`)
-- `isActive: boolean`
-- `timestamps: true`
-- Indexes:
-  - `{ code: 1 }` unique
-  - `{ category: 1, isActive: 1 }`
+- PUT /api/users/:userId
+  - Admin only, update user details
 
-### Service DTO (`Backend/src/Dtos/service.dto.ts`)
-- `createServiceBodySchema`
-- `updateServiceBodySchema`
-- `serviceIdParamsSchema`
-- `getServicesQuerySchema`
+- PUT /api/users/:userId/role
+  - Admin only, update role (and Clerk metadata sync)
 
----
+- PATCH /api/users/:userId/deactivate
+  - Admin only, soft deactivate
 
-## 4) Controllers
+- DELETE /api/users/:userId
+  - Admin only, delete user
 
-## 4.1 User Controller (`Backend/src/controllers/userController.ts`)
-Implemented handlers:
-- `getAllUsers`
-  - validates query with `getUsersQuerySchema`
-  - filters users with `User.find(parsedQuery.data)`
-- `updateUserByClerkId`
-  - gets authenticated user from Clerk token (`getAuth(req).userId`)
-  - validates body using `updateUserBodySchema`
-  - updates current user via `{ clerkUserId: auth.userId }`
+- POST /api/users/:userId/manager
+  - Admin only, assign manager relationship
 
-## 4.2 Referral Controller (`Backend/src/controllers/referralController.ts`)
-Implemented handlers:
-- `getAllReferrals`
-- `getReferralsByPatientId`
-- `getReferralsByPractitionerId`
-- `createReferral`
-- `updateReferralByPatientId`
-- `deleteReferralByPatientId`
-- `assignReferralById`
-
-`assignReferralById` updates one referral by `_id` and sets:
-- `practitionerClerkUserId`
-- `assignedDate = new Date()`
-- `assignedbyClerkUserId` from auth token (when available)
-
-## 4.3 Service Controller (`Backend/src/controllers/serviceController.ts`)
-Implemented handlers:
-- `getAllServices`
-- `getServiceById`
-- `createService`
-- `updateServiceById`
-- `deleteServiceById`
-
----
-
-## 5) Routers and Endpoints
-
-Base URL:
-- `http://localhost:3000/api`
-
-### 5.1 Users (`Backend/src/routes/userRoutes.ts`)
-- `GET /api/users`
-  - Query options currently supported by DTO:
-    - `role`
-    - `isActive`
-    - `clerkUserId`
-    - `email`
-- `PUT /api/users/me`
-  - Authenticated endpoint
-  - Reads `clerkUserId` from token, no URL params
-
-### 5.2 Referrals (`Backend/src/routes/referralRoutes.ts`)
-- `GET /api/referrals`
-- `GET /api/referrals/patient/:patientId`
-- `GET /api/referrals/practitioner/:practitionerId`
-- `POST /api/referrals`
-- `PUT /api/referrals/patient/:patientId`
-- `DELETE /api/referrals/patient/:patientId`
-- `PUT /api/referrals/:referralId/assign`
-
-### 5.3 Services (`Backend/src/routes/serviceRoutes.ts`)
-- `GET /api/services`
-- `GET /api/services/:serviceId`
-- `POST /api/services`
-- `PUT /api/services/:serviceId`
-- `DELETE /api/services/:serviceId`
-
----
-
-## 6) How to Add a New Schema (Backend)
-
-Use this checklist end-to-end.
-
-### Step 1: Create Mongoose model
-Create `Backend/src/models/<NewEntity>.ts`
-- define schema fields
-- enable `timestamps: true`
-- add indexes if needed
-- export model
-
-### Step 2: Create DTO validation file
-Create `Backend/src/Dtos/<newEntity>.dto.ts`
-- params schemas (`...IdParamsSchema`)
-- query schema (`get...QuerySchema`)
-- create/update body schemas
-
-### Step 3: Create controller
-Create `Backend/src/controllers/<newEntity>Controller.ts`
-- validate request with Zod `safeParse`
-- throw typed errors (`ValidationError`, `NotFoundError`, etc.)
-- wrap handlers in `try/catch` and `next(error)`
-
-### Step 4: Create router
-Create `Backend/src/routes/<newEntity>Routes.ts`
-- map HTTP methods + paths to controller handlers
-
-### Step 5: Mount router in server index
-In `Backend/src/index.ts`:
-1. import the router
-2. mount route:
-   - `server.use('/api/<new-entity-plural>', <newEntity>Routes)`
-3. keep global error middleware after route mounts
-
-### Step 6: Optional seed support
-If needed, add seed documents in `Backend/src/models/seed/seedDb.ts`
-
----
-
-## 7) How to Add a New Endpoint (Existing Entity)
-
-Example process for adding `GET /api/services/category/:category`:
-
-1. **DTO**
-   - add params schema for `category`
-2. **Controller**
-   - add handler `getServicesByCategory`
-   - validate params
-   - query DB and return list
-3. **Router**
-   - add route mapping in `serviceRoutes.ts`
-4. **Frontend API store**
-   - add RTK Query endpoint in `servicesApi.js`
-5. **Export hook**
-   - export hook from `servicesApi.js` and `store/api/index.js`
-
-Recommended endpoint structure:
-- collection read: `GET /resource`
-- single read: `GET /resource/:id`
-- create: `POST /resource`
-- update: `PUT /resource/:id`
-- delete: `DELETE /resource/:id`
-- custom action: `PUT /resource/:id/<action>`
-
----
-
-## 8) Frontend API Store (RTK Query)
-
-Frontend uses RTK Query with code-splitting injection pattern.
-
-### 8.1 Base API (`Frontend/src/store/api/baseApi.js`)
-- `createApi` initialized once
-- base URL from `VITE_API_BASE_URL` fallback to `http://localhost:3000/api`
-- sends credentials + Clerk bearer token via `prepareHeaders`
-- shared `tagTypes`: `Users`, `Referrals`, `Services`
-
-### 8.2 API slice injection files
-- `usersApi.js`
-- `referralsApi.js`
-- `servicesApi.js`
-
-Each file uses:
-- `baseApi.injectEndpoints({ endpoints, overrideExisting: false })`
-
-### 8.3 Store integration (`Frontend/src/store/index.js`)
-The store includes only baseApi reducer + middleware:
-- reducer: `[baseApi.reducerPath]: baseApi.reducer`
-- middleware: `.concat(baseApi.middleware)`
-
-### 8.4 Hook export barrel (`Frontend/src/store/api/index.js`)
-All hooks are re-exported so components can import from one place.
-
----
-
-## 9) How to Add a New Frontend API (RTK Query)
-
-If backend adds new entity `appointments`:
-
-### Step 1: Add new injected API file
-Create: `Frontend/src/store/api/appointmentsApi.js`
-
-Pattern:
-```js
-import { baseApi } from './baseApi';
-
-export const appointmentsApi = baseApi.injectEndpoints({
-  endpoints: (builder) => ({
-    getAppointments: builder.query({
-      query: (params) => ({ url: '/appointments', params }),
-      providesTags: ['Appointments'],
-    }),
-    getAppointmentById: builder.query({
-      query: (appointmentId) => `/appointments/${appointmentId}`,
-      providesTags: ['Appointments'],
-    }),
-    createAppointment: builder.mutation({
-      query: (body) => ({ url: '/appointments', method: 'POST', body }),
-      invalidatesTags: ['Appointments'],
-    }),
-    updateAppointmentById: builder.mutation({
-      query: ({ appointmentId, body }) => ({
-        url: `/appointments/${appointmentId}`,
-        method: 'PUT',
-        body,
-      }),
-      invalidatesTags: ['Appointments'],
-    }),
-    deleteAppointmentById: builder.mutation({
-      query: (appointmentId) => ({
-        url: `/appointments/${appointmentId}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Appointments'],
-    }),
-  }),
-  overrideExisting: false,
-});
-
-export const {
-  useGetAppointmentsQuery,
-  useGetAppointmentByIdQuery,
-  useCreateAppointmentMutation,
-  useUpdateAppointmentByIdMutation,
-  useDeleteAppointmentByIdMutation,
-} = appointmentsApi;
-```
-
-### Step 2: Register tag type
-In `baseApi.js`, add `'Appointments'` to `tagTypes`.
-
-### Step 3: Export from barrel
-In `Frontend/src/store/api/index.js`, export the new hooks.
-
-### Step 4: Use in component
-```js
-import { useGetAppointmentsQuery } from '@/store/api';
-
-const { data, isLoading, error } = useGetAppointmentsQuery();
-```
-
----
-
-## 10) Current Frontend Hooks Reference
-
-### Users
-- `useGetUsersQuery`
-- `useUpdateMeMutation`
-
-### Referrals
-- `useGetReferralsQuery`
-- `useGetReferralsByPatientIdQuery`
-- `useGetReferralsByPractitionerIdQuery`
-- `useCreateReferralMutation`
-- `useUpdateReferralsByPatientIdMutation`
-- `useAssignReferralByIdMutation`
-- `useDeleteReferralsByPatientIdMutation`
-
-### Services
-- `useGetServicesQuery`
-- `useGetServiceByIdQuery`
-- `useCreateServiceMutation`
-- `useUpdateServiceByIdMutation`
-- `useDeleteServiceByIdMutation`
-
----
-
-## 11) API Response and Error Conventions
-
-### Success responses
-- `200` for successful reads/updates/deletes
-- `201` for creates
-- JSON payloads (entity object or array)
-
-### Error responses (global middleware)
-- `400` validation/bad request
-- `401` unauthorized
-- `403` forbidden
-- `404` not found
-- `500` internal error
-
-Error shape:
+Example response (GET /api/users/me):
 ```json
-{ "message": "..." }
+{
+  "_id": "67f...",
+  "clerkUserId": "user_...",
+  "email": "person@company.com",
+  "role": "employee",
+  "firstName": "Alex",
+  "lastName": "Taylor",
+  "department": "Finance"
+}
 ```
 
 ---
 
-## 12) Recommended Development Rules
+## 3.2 Referrals API
+Router: Backend/src/routes/referralRoutes.ts
 
-1. Validate every input with Zod DTOs.
-2. Throw typed errors; do not manually duplicate error response logic in controllers.
-3. Keep route files thin; business logic belongs in controllers/services.
-4. Use consistent naming:
-   - controller file: `<entity>Controller.ts`
-   - routes file: `<entity>Routes.ts`
-   - DTO file: `<entity>.dto.ts`
-5. Keep frontend API hooks grouped per entity via injected endpoints.
-6. Use tags consistently for cache invalidation.
+- GET /api/referrals
+  - Get all referrals
+
+- GET /api/referrals/my-submissions
+  - Authenticated manager submissions
+  - Optional query params: status, serviceType, search, dateFrom, dateTo, page, limit
+
+- GET /api/referrals/patient/:patientId
+  - Get referrals by patient Clerk user ID
+
+- GET /api/referrals/practitioner/:practitionerId
+  - Get referrals by practitioner Clerk user ID
+
+- GET /api/referrals/:referralId
+  - Get one referral by ID
+
+- POST /api/referrals
+  - Create referral
+
+- PUT /api/referrals/patient/:patientId
+  - Update referrals by patient
+
+- DELETE /api/referrals/patient/:patientId
+  - Delete referrals by patient
+
+- PUT /api/referrals/:referralId/assign
+  - Assign practitioner to referral
+
+- PUT /api/referrals/:referralId/status
+  - Update referral status
+
+- PUT /api/referrals/:referralId/cancel
+  - Manager cancel referral with reason
+
+Example request (PUT /api/referrals/:referralId/cancel):
+```json
+{
+  "reason": "Issue resolved internally"
+}
+```
+
+Example response:
+```json
+{
+  "message": "Referral cancelled successfully",
+  "referral": {
+    "_id": "67f...",
+    "referralStatus": "cancelled",
+    "cancellationReason": "Issue resolved internally"
+  }
+}
+```
 
 ---
 
-## 13) Quick End-to-End Template (Backend + Frontend)
+## 3.3 Services API
+Router: Backend/src/routes/serviceRoutes.ts
 
-### Backend
-1. Add model
-2. Add DTO
-3. Add controller
-4. Add router
-5. Mount route in `Backend/src/index.ts`
+- GET /api/services
+- GET /api/services/:serviceId
+- POST /api/services
+  - Admin only
+- PUT /api/services/:serviceId
+  - Admin only
+- DELETE /api/services/:serviceId
+  - Admin only
 
-### Frontend
-1. Add injected API file under `Frontend/src/store/api/`
-2. Add new tag type in `baseApi.js` (if new entity)
-3. Export hooks in `Frontend/src/store/api/index.js`
-4. Consume hook in page/component
+Example create request:
+```json
+{
+  "name": "Physiotherapy",
+  "code": "PHYSIO_001",
+  "category": "physiotherapy",
+  "defaultDuration": 45,
+  "isActive": true
+}
+```
 
 ---
 
-## 14) Notes for Future Contributors
+## 3.4 Appointments API
+Router: Backend/src/routes/appointmentRoutes.ts
 
-- Authentication currently relies on Clerk middleware and token extraction in selected endpoints (e.g. `PUT /users/me`, referral assignment metadata).
-- Keep `globalErrorHandlingMiddleware` as the final middleware.
-- Keep route mount prefix `/api/<resource>` for consistency across backend and frontend base URL usage.
+- GET /api/appointments/employee/:employeeId
+  - Employee timeline data
+
+- GET /api/appointments/practitioner/:practitionerId
+  - Practitioner appointments view
+
+- PATCH /api/appointments/:appointmentId/respond
+  - Practitioner response action
+  - Status accepted by implementation: confirmed or rejected
+
+- PATCH /api/appointments/:appointmentId/cancel
+  - Practitioner cancellation action
+
+Example response action request:
+```json
+{
+  "status": "confirmed"
+}
+```
+
+---
+
+## 3.5 Notifications API
+Router: Backend/src/routes/notificationRoutes.ts
+
+- GET /api/notifications
+  - Current authenticated user notifications
+  - Optional filters supported by DTO: unread, type, limit
+
+- PATCH /api/notifications/:notificationId/read
+  - Mark one notification as read
+
+Example read response:
+```json
+{
+  "_id": "notif_...",
+  "title": "Referral Status Updated",
+  "channels": {
+    "inApp": {
+      "read": true,
+      "readAt": "2026-03-14T12:00:00.000Z"
+    }
+  }
+}
+```
+
+---
+
+## 3.6 Medical Records API
+Router: Backend/src/routes/medicalRecordRoutes.ts
+
+- GET /api/medical-records/access-count/:employeeId
+  - Returns advice-sheet/record access count for employee dashboard metrics
+
+Example response:
+```json
+{
+  "accessCount": 7
+}
+```
+
+---
+
+## 3.7 Reviews API
+Router: Backend/src/routes/reviewRoutes.ts
+
+- GET /api/reviews
+  - Current practitioner reviews
+  - Optional query: limit
+
+- POST /api/reviews
+  - Create review for current practitioner
+
+Example create request:
+```json
+{
+  "patientName": "A. Brown",
+  "message": "Very supportive consultation",
+  "rating": 5
+}
+```
+
+---
+
+## 3.8 Webhooks API
+Router mount: /api/webhooks
+
+- Endpoint(s) in Backend/src/middlewares/webhooks/webhooks.ts
+- Mounted before express.json() because raw body is required for signature verification
+
+---
+
+## 4) Current Data Model Summary
+
+Core implemented collections:
+- users
+- referrals
+- services
+- appointments
+- notifications
+- medical_records
+- reviews
+- analytics_snapshots (for analytics snapshots/trends where used)
+
+Important identity relationships:
+- clerkUserId links app users to Clerk identities
+- referral submittedBy/patient/practitioner fields connect role workflows
+- appointments connect referrals and participant users
+
+---
+
+## 5) Frontend RTK Query Mapping (Current)
+
+Base API setup:
+- File: Frontend/src/store/api/baseApi.js
+- Tag types: Users, Referrals, Services, Notifications, MedicalRecords, Reviews, Appointments
+- Token injection from Clerk session in prepareHeaders
+
+Central hook exports:
+- File: Frontend/src/store/api/index.js
+
+Users hooks:
+- useGetUsersQuery
+- useGetMeQuery
+- useUpdateMeMutation
+- useCreateUserMutation
+- useUpdateUserMutation
+- useUpdateUserRoleMutation
+- useDeactivateUserMutation
+- useDeleteUserMutation
+- useAssignUserManagerMutation
+
+Referrals hooks:
+- useGetReferralsQuery
+- useGetMyReferralsQuery
+- useGetReferralsByPatientIdQuery
+- useGetReferralsByPractitionerIdQuery
+- useGetReferralByIdQuery
+- useCreateReferralMutation
+- useUpdateReferralsByPatientIdMutation
+- useAssignReferralByIdMutation
+- useDeleteReferralsByPatientIdMutation
+- useUpdateReferralStatusMutation
+- useCancelReferralByIdMutation
+
+Services hooks:
+- useGetServicesQuery
+- useGetServiceByIdQuery
+- useCreateServiceMutation
+- useUpdateServiceByIdMutation
+- useDeleteServiceByIdMutation
+
+Notifications hooks:
+- useGetNotificationsQuery
+- useMarkNotificationReadMutation
+
+Appointments hooks:
+- useGetAppointmentsByEmployeeIdQuery
+- useGetAppointmentsByPractitionerIdQuery
+- useRespondToAppointmentMutation
+- useCancelAppointmentMutation
+
+Reviews hooks:
+- useGetReviewsQuery
+- useCreateReviewMutation
+
+Note:
+- medicalRecordsApi exists with useGetAdviceSheetAccessCountByEmployeeIdQuery, but it is not currently re-exported from Frontend/src/store/api/index.js.
+
+---
+
+## 6) Response and Error Conventions
+
+Success responses:
+- 200 for successful reads/updates/deletes
+- 201 for successful creates
+
+Common error statuses:
+- 400 validation or bad request
+- 401 unauthenticated
+- 403 unauthorized
+- 404 not found
+- 500 server error
+
+Typical error payload:
+```json
+{
+  "message": "Validation failed"
+}
+```
+
+---
+
+## 7) Contributor Update Checklist
+
+When adding or changing an API:
+1. Update DTO schema (params/query/body)
+2. Update controller logic
+3. Update router endpoint mapping
+4. Mount router in Backend/src/index.ts (if new module)
+5. Add or update RTK Query endpoints and tags
+6. Export hooks from Frontend/src/store/api/index.js
+7. Update this API_DOCUMENTATION.md file

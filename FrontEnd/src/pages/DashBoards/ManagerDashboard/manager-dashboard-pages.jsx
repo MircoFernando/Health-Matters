@@ -9,6 +9,12 @@ import {
   useMarkNotificationReadMutation,
 } from "../../../store/api";
 
+/*
+ Team A - Manager referral submission, tracking, details, endpoint wiring, and responsive workflow UI (TMA-001, TMA-002, TMA-003, TMA-004, TMA-005, TMA-006) . Done by Mahdi and Savindu
+ Team D - Manager notifications, cancellation, and team analytics dashboard surfaces (TMD-001, TMD-002, TMD-003, TMD-004, TMD-005) . Done by Ramiru, Sajana, and Omidu
+ Team B - Manager profile-side operational data context for personal details and guidance views (TMB-005, TMB-006) . Done by Tevin and Ovin
+*/
+
 const STATUS_CONFIG = {
   pending: { label: "Pending", style: "bg-amber-100 text-amber-700" },
   assigned: { label: "Assigned", style: "bg-sky-100 text-sky-700" },

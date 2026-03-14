@@ -24,6 +24,10 @@ import {
   useGetReferralsQuery,
   useGetUsersQuery,
 } from "@/store/api";
+
+/*
+ Team F - Centralized admin referral intake dashboard with triage, search, and assignment actions (TMF-005) . Done by Danuja and Isuru
+*/
  
 const getFullName = (user) => {
   if (!user) return "Unknown";

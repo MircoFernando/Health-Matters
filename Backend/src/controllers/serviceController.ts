@@ -9,6 +9,12 @@ import {
 } from '../Dtos/service.dto';
 import { ValidationError, NotFoundError } from '../errors/errors';
 
+/*
+ Team H - Service catalogue listing, creation, editing, deactivation support, and KPI data sources (TMH-001, TMH-002, TMH-003, TMH-004, TMH-005) . Done by Piushan, Vishal, Tenura, Shamal, and Usara
+ Team C - Employee service visibility for referral decision support (TMC-005) . Done by Vinuki and Senuthi
+ Team B - Manager guidance and advice document catalogue support (TMB-006) . Done by Tevin and Ovin
+*/
+
 const formatValidationErrors = (error: ZodError) =>
   error.issues.map((issue) => ({
     field: issue.path.join('.'),

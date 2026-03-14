@@ -10,6 +10,10 @@ import {
   useRespondToAppointmentMutation,
 } from '@/store/api';
 
+/*
+ Team G - Practitioner appointment list, cancellation handling, and appointment statistics-related status views (TMG-001, TMG-003, TMG-004) . Done by Charin, Helika, and Vinuli
+*/
+
 const getDisplayName = (user) => {
   if (!user) {
     return 'Unknown';

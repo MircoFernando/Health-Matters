@@ -4,6 +4,11 @@ import { PlusCircle, ChevronLeft, Send, CheckCircle, AlertCircle, Loader2 } from
 import { useCreateReferralMutation } from "../../../store/api";
 import { useUser } from "@clerk/clerk-react";
 
+/*
+ Team C - Employee self-referral form with required validation and GDPR note (TMC-001) . Done by Vinuki and Senuthi, and Tharusha
+ Team C - Employee visible service list with pricing and duration before referral submission (TMC-005) . Done by Vinuki and Senuthi
+*/
+
 // Required Fields Note (centered with circular info icon + red star)
 const RequiredFieldsNote = () => (
   <div className="flex justify-center mt-6">
