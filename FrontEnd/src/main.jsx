@@ -31,6 +31,7 @@ import PractitionerDashboardLayout from "./pages/DashBoards/PractitionerDashboar
 import { PractitionerTestOverview } from "./pages/DashBoards/PractitionerDashboard/test-overview.jsx";
 import { PractitionerTestPatients } from "./pages/DashBoards/PractitionerDashboard/test-patients.jsx";
 import { PractitionerTestReviews } from "./pages/DashBoards/PractitionerDashboard/test-reviews.jsx";
+import { PractitionerReviewsLearnMore } from "./pages/DashBoards/PractitionerDashboard/test-reviews-learn-more.jsx";
 import { PractitionerTestProfile } from "./pages/DashBoards/PractitionerDashboard/test-profile.jsx";
 import { PractitionerTestAppointments } from "./pages/DashBoards/PractitionerDashboard/test-appointments.jsx";
 import { PractitionerTestCreateReferral } from './pages/DashBoards/PractitionerDashboard/test-create-referral.jsx';
@@ -102,6 +103,7 @@ const ClerkWithRoutes = () => {
               <Route index element={<PractitionerTestOverview />} />
               <Route path="patients" element={<PractitionerTestPatients />} />
               <Route path="reviews" element={<PractitionerTestReviews />} />
+              <Route path="reviews/learn-more" element={<PractitionerReviewsLearnMore />} />
               <Route path="appointments" element={<PractitionerTestAppointments />} />
               <Route path="profile" element={<PractitionerTestProfile />} />
               <Route path='create_referral' element={ <PractitionerTestCreateReferral /> } />

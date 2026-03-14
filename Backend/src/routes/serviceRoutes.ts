@@ -6,8 +6,11 @@ import {
   getServiceById,
   updateServiceById,
 } from '../controllers/serviceController';
+import { requireAdminRole, requireClerkAuth } from '../middlewares/auth-middleware';
 
 const ServiceRouter = express.Router();
+
+ServiceRouter.use(requireClerkAuth);
 
 // GET /api/services - Get all services
 ServiceRouter.get('/', getAllServices);
@@ -16,12 +19,12 @@ ServiceRouter.get('/', getAllServices);
 ServiceRouter.get('/:serviceId', getServiceById);
 
 // POST /api/services - Create a new service
-ServiceRouter.post('/', createService);
+ServiceRouter.post('/', requireAdminRole, createService);
 
 // PUT /api/services/:serviceId - Update service by ID
-ServiceRouter.put('/:serviceId', updateServiceById);
+ServiceRouter.put('/:serviceId', requireAdminRole, updateServiceById);
 
 // DELETE /api/services/:serviceId - Delete service by ID
-ServiceRouter.delete('/:serviceId', deleteServiceById);
+ServiceRouter.delete('/:serviceId', requireAdminRole, deleteServiceById);
 
 export default ServiceRouter;

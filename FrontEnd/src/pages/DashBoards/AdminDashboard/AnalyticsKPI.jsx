@@ -209,8 +209,7 @@ export const AnalyticsKPI = () => {
           </p>
         </div>
         <Button
-          variant="outline"
-          className="gap-2 text-slate-700 hover:text-slate-900 border-slate-300"
+          className="gap-2 border border-blue-700 bg-blue-600 text-white hover:bg-blue-700"
           onClick={handleRefreshAll}
         >
           <RefreshCw className="h-4 w-4" />
@@ -342,7 +341,7 @@ export const AnalyticsKPI = () => {
             <CardDescription>Daily referral submissions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-75">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={referralTrendData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -380,7 +379,7 @@ export const AnalyticsKPI = () => {
             <CardDescription>Current referral statuses</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-75">
               {referralStatusData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -423,7 +422,7 @@ export const AnalyticsKPI = () => {
             <CardDescription>Breakdown of user roles</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-75">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={userRoleData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -454,7 +453,7 @@ export const AnalyticsKPI = () => {
             <CardDescription>Distribution of service types</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-75">
               {serviceCategoryData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={serviceCategoryData}>

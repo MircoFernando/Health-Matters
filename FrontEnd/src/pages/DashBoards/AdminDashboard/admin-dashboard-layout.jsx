@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UserButton, useUser } from "@clerk/clerk-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import logoTrans from "../../../assets/Health matter logo_trans.png";
 
 const items = [
   {
@@ -65,15 +66,22 @@ const AdminDashboardLayout = () => {
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full bg-slate-50">
+        <div className="flex min-h-screen w-full bg-linear-to-br from-slate-100 via-blue-50/60 to-slate-100">
           {/* SIDEBAR: Blue Theme Applied Here */}
           <Sidebar className="border-r border-blue-800 bg-blue-900 text-white">
             
             {/* Header */}
             <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6">
-              <span className="text-lg font-bold tracking-wide text-white">
-                Admin Panel
-              </span>
+              <div className="flex w-full items-center gap-3">
+                <img
+                  src={logoTrans}
+                  alt="Health Matters"
+                  className="h-10 w-10 rounded-md bg-white/10 p-1 object-contain"
+                />
+                <span className="text-lg font-bold tracking-wide text-white">
+                  Admin Panel
+                </span>
+              </div>
             </SidebarHeader>
 
             {/* Content / Menu */}
@@ -137,12 +145,15 @@ const AdminDashboardLayout = () => {
           {/* MAIN CONTENT */}
           <main className="flex flex-1 flex-col overflow-hidden">
             {/* Top Navbar */}
-            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
+            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/95 px-6 shadow-sm backdrop-blur">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="text-blue-900 hover:bg-blue-50 hover:text-blue-700" />
-                <h2 className="text-lg font-semibold text-slate-800">
-                  Dashboard
-                </h2>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-800">Dashboard</h2>
+                  <p className="text-xs text-slate-500">
+                    Signed in as {user?.fullName || user?.firstName || "User"}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-green-500"></span>
@@ -151,7 +162,7 @@ const AdminDashboardLayout = () => {
             </header>
 
             {/* Page Content Outlet */}
-            <div className="flex-1 overflow-auto p-6">
+            <div className="flex-1 overflow-auto p-6 [--admin-btn:#2563eb] [&_button]:font-medium [&_button]:transition-colors [&_button:not([data-sidebar=trigger])]:rounded-lg [&_button:not([data-sidebar=trigger])]:border [&_button:not([data-sidebar=trigger])]:border-blue-700 [&_button:not([data-sidebar=trigger])]:bg-blue-600 [&_button:not([data-sidebar=trigger])]:text-white [&_button:not([data-sidebar=trigger])]:hover:bg-blue-700 [&_button:not([data-sidebar=trigger])]:hover:text-white">
               <Outlet />
             </div>
           </main>

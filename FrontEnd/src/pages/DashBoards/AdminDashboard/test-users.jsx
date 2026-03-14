@@ -173,7 +173,7 @@ export const TestUsers = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rounded-2xl border border-blue-100/70 bg-white/80 p-4 shadow-sm backdrop-blur-sm md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">User Role Management Console</h1>
@@ -182,7 +182,7 @@ export const TestUsers = () => {
         <button
           type="button"
           onClick={() => setShowCreate((v) => !v)}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          className="rounded-lg border border-blue-700 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           {showCreate ? "Close" : "Create User"}
         </button>
@@ -214,7 +214,7 @@ export const TestUsers = () => {
           <select
             value={createForm.role}
             onChange={(e) => setCreateForm((prev) => ({ ...prev, role: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm"
           >
             {ROLE_OPTIONS.map((role) => (
               <option key={role} value={role}>{role}</option>
@@ -238,7 +238,7 @@ export const TestUsers = () => {
             <button
               type="submit"
               disabled={creating}
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+              className="rounded-lg border border-blue-700 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
             >
               {creating ? "Creating..." : "Save User"}
             </button>
@@ -257,7 +257,7 @@ export const TestUsers = () => {
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          className="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm"
         >
           <option value="all">All roles</option>
           {ROLE_OPTIONS.map((role) => (
@@ -267,7 +267,7 @@ export const TestUsers = () => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          className="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm"
         >
           <option value="all">All status</option>
           <option value="active">Active</option>
@@ -305,7 +305,7 @@ export const TestUsers = () => {
                         value={user.role}
                         onChange={(e) => handleQuickRoleChange(user._id, e.target.value)}
                         disabled={savingRole}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                        className="rounded-md border border-blue-200 bg-white px-2 py-1 text-xs text-slate-900 shadow-sm"
                       >
                         {ROLE_OPTIONS.map((role) => (
                           <option key={role} value={role}>{role}</option>
@@ -322,7 +322,7 @@ export const TestUsers = () => {
                         value={user.managerClerkUserId ?? ""}
                         onChange={(e) => handleAssignManager(user._id, e.target.value)}
                         disabled={assigningManager || user.role !== "employee"}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                        className="rounded-md border border-blue-200 bg-white px-2 py-1 text-xs text-slate-900 shadow-sm"
                       >
                         <option value="">Unassigned</option>
                         {managers.map((manager) => (
@@ -337,7 +337,7 @@ export const TestUsers = () => {
                         <button
                           type="button"
                           onClick={() => startEditing(user)}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-100"
+                          className="rounded-md border border-blue-700 bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
                         >
                           Edit
                         </button>
@@ -345,7 +345,7 @@ export const TestUsers = () => {
                           type="button"
                           onClick={() => handleDeactivate(user)}
                           disabled={deactivating || !user.isActive}
-                          className="rounded-md border border-amber-300 px-2 py-1 text-xs text-amber-700 hover:bg-amber-50 disabled:opacity-60"
+                          className="rounded-md border border-blue-700 bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700 disabled:opacity-60"
                         >
                           Deactivate
                         </button>
@@ -353,7 +353,7 @@ export const TestUsers = () => {
                           type="button"
                           onClick={() => handleDelete(user)}
                           disabled={deleting}
-                          className="rounded-md border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+                          className="rounded-md border border-red-700 bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700 disabled:opacity-60"
                         >
                           Delete
                         </button>
@@ -378,15 +378,15 @@ export const TestUsers = () => {
               <input value={editForm.firstName} onChange={(e) => setEditForm((prev) => ({ ...prev, firstName: e.target.value }))} placeholder="First name" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
               <input value={editForm.lastName} onChange={(e) => setEditForm((prev) => ({ ...prev, lastName: e.target.value }))} placeholder="Last name" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
               <input value={editForm.email} onChange={(e) => setEditForm((prev) => ({ ...prev, email: e.target.value }))} placeholder="Email" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
-              <select value={editForm.role} onChange={(e) => setEditForm((prev) => ({ ...prev, role: e.target.value }))} className="rounded-md border border-slate-300 px-3 py-2 text-sm">
+              <select value={editForm.role} onChange={(e) => setEditForm((prev) => ({ ...prev, role: e.target.value }))} className="rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm">
                 {ROLE_OPTIONS.map((role) => <option key={role} value={role}>{role}</option>)}
               </select>
               <input value={editForm.department} onChange={(e) => setEditForm((prev) => ({ ...prev, department: e.target.value }))} placeholder="Department" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
               <input value={editForm.phone} onChange={(e) => setEditForm((prev) => ({ ...prev, phone: e.target.value }))} placeholder="Phone" className="rounded-md border border-slate-300 px-3 py-2 text-sm" />
             </div>
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => { setEditingUser(null); setEditForm(null); }} className="rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Cancel</button>
-              <button type="submit" disabled={savingEdit} className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60">
+              <button type="button" onClick={() => { setEditingUser(null); setEditForm(null); }} className="rounded-md border border-blue-700 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">Cancel</button>
+              <button type="submit" disabled={savingEdit} className="rounded-md border border-blue-700 bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60">
                 {savingEdit ? "Saving..." : "Save Changes"}
               </button>
             </div>

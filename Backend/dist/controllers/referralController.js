@@ -214,6 +214,14 @@ const assignReferralById = async (req, res, next) => {
         }
         const { referralId } = parsedParams.data;
         const { practitionerClerkUserId } = parsedBody.data;
+        const practitioner = await User_1.User.findOne({
+            clerkUserId: practitionerClerkUserId,
+            role: 'practitioner',
+            isActive: true,
+        });
+        if (!practitioner) {
+            throw new errors_1.BadRequestError('Selected user is not an active practitioner');
+        }
         const updatedReferral = await Referral_1.Referral.findByIdAndUpdate(referralId, {
             $set: {
                 practitionerClerkUserId,
@@ -227,7 +235,6 @@ const assignReferralById = async (req, res, next) => {
         // Create an in-app notification for the patient when a practitioner is assigned
         try {
             const patient = await User_1.User.findOne({ clerkUserId: updatedReferral.patientClerkUserId });
-            const practitioner = await User_1.User.findOne({ clerkUserId: practitionerClerkUserId });
             if (patient) {
                 const practitionerName = practitioner
                     ? `${practitioner.firstName || ''} ${practitioner.lastName || ''}`.trim()

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UserButton, useUser } from "@clerk/clerk-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import logoTrans from "../../../assets/Health matter logo_trans.png";
 
 const items = [
   {
@@ -71,9 +72,16 @@ const PractitionerDashboardLayout = () => {
         <div className="flex min-h-screen w-full bg-blue-50">
           <Sidebar className="border-r border-blue-800 bg-blue-800 text-white">
             <SidebarHeader className="flex h-16 items-center border-b border-blue-800 px-6">
-              <span className="text-lg font-bold tracking-wide text-white">
-                Practitioner Panel
-              </span>
+              <div className="flex w-full items-center gap-3">
+                <img
+                  src={logoTrans}
+                  alt="Health Matters"
+                  className="h-10 w-10 rounded-md bg-white/10 p-1 object-contain"
+                />
+                <span className="text-lg font-bold tracking-wide text-white">
+                  Practitioner Panel
+                </span>
+              </div>
             </SidebarHeader>
 
             <SidebarContent className="px-3 py-4">
@@ -134,9 +142,12 @@ const PractitionerDashboardLayout = () => {
             <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-blue-200 bg-white px-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="bg-blue-700 text-white hover:bg-blue-800" />
-                <h2 className="text-lg font-semibold text-slate-800">
-                  Dashboard
-                </h2>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-800">Dashboard</h2>
+                  <p className="text-xs text-slate-500">
+                    Signed in as {user?.fullName || user?.firstName || "User"}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-green-500"></span>

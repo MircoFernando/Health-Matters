@@ -1,177 +1,193 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router";
+import { Loader2, Star } from "lucide-react";
+import { useCreateReviewMutation, useGetReviewsQuery } from "../../../store/api/reviewsApi";
+
+const initialFormState = {
+  patientName: "",
+  message: "",
+  rating: 0,
+};
+
+const StarRating = ({ value, onSelect }) => (
+  <div className="flex items-center gap-2">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <button
+        key={star}
+        type="button"
+        onClick={() => onSelect(star)}
+        className="rounded-md p-1 transition hover:bg-amber-50"
+        aria-label={`Rate ${star} out of 5`}
+      >
+        <Star
+          className={`h-6 w-6 ${value >= star ? "fill-amber-400 text-amber-400" : "text-slate-300"}`}
+        />
+      </button>
+    ))}
+  </div>
+);
+
+const ReviewCard = ({ review }) => (
+  <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <h3 className="text-base font-semibold text-slate-800">{review.patientName}</h3>
+    <div className="mt-2 flex items-center gap-1" aria-label={`${review.rating} star rating`}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={`h-4 w-4 ${review.rating >= star ? "fill-amber-400 text-amber-400" : "text-slate-200"}`}
+        />
+      ))}
+    </div>
+    <p className="mt-3 text-sm leading-6 text-slate-600">{review.message}</p>
+  </article>
+);
 
 export const PractitionerTestReviews = () => {
+  const [searchParams] = useSearchParams();
+  const showAll = searchParams.get("scope") === "all";
+  const limit = showAll ? 100 : 4;
 
-  const [name, setName] = useState("");
-  const [review, setReview] = useState("");
-  const [rating, setRating] = useState(0);
+  const [form, setForm] = useState(initialFormState);
+  const [formError, setFormError] = useState("");
 
-  const reviews = [
-    {
-      name: "John Doe",
-      text: "Amazing service and caring staff.",
-      rating: 5,
-    },
-    {
-      name: "Jane Smith",
-      text: "The appointment process was smooth.",
-      rating: 4,
-    },
-    {
-      name: "Alice Johnson",
-      text: "I had a great experience during my treatment.",
-      rating: 5,
-    },
-    {
-      name: "Bob Brown",
-      text: "Staff could be more responsive.",
-      rating: 3,
-    },
-  ];
+  const { data: reviews = [], isLoading, isFetching } = useGetReviewsQuery({ limit });
+  const [createReview, { isLoading: isSubmitting }] = useCreateReviewMutation();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert("Review Submitted!");
-    setName("");
-    setReview("");
-    setRating(0);
+  const reviewCountLabel = useMemo(() => {
+    if (showAll) return `${reviews.length} total reviews`;
+    return `Showing ${reviews.length} recent reviews`;
+  }, [reviews.length, showAll]);
+
+  const handleCancel = () => {
+    setForm(initialFormState);
+    setFormError("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!form.patientName.trim() || !form.message.trim() || form.rating < 1) {
+      setFormError("Patient name, review message, and a star rating are required.");
+      return;
+    }
+
+    try {
+      await createReview({
+        patientName: form.patientName.trim(),
+        message: form.message.trim(),
+        rating: form.rating,
+      }).unwrap();
+
+      handleCancel();
+    } catch (error) {
+      setFormError(error?.data?.message || "Unable to submit review right now.");
+    }
   };
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
-
-      {/* Header */}
-      <div className="bg-blue-100 p-6 rounded text-center mb-8">
-        <h1 className="text-3xl font-bold">Patient Reviews</h1>
-        <p className="text-gray-600">
-          Read and share reviews from other patients
+    <div className="mx-auto max-w-6xl space-y-8">
+      <section className="rounded-3xl border border-blue-100 bg-linear-to-r from-blue-50 to-cyan-50 p-6">
+        <h1 className="text-3xl font-bold text-slate-900">Patient Reviews</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Review recent patient feedback and submit new notes after treatment sessions.
         </p>
+      </section>
 
-        <button className="mt-4 bg-black text-white px-6 py-2 rounded">
-          Write a review
-        </button>
-      </div>
-
-      {/* Recent Reviews */}
-      <h2 className="text-2xl font-semibold mb-4">Recent Reviews</h2>
-
-      <div className="grid grid-cols-2 gap-4 mb-8">
-
-        {reviews.map((r, index) => (
-          <div
-            key={index}
-            className="bg-white p-4 shadow rounded border"
-          >
-            <h3 className="font-semibold">{r.name}</h3>
-
-            <p className="text-yellow-500">
-              {"⭐".repeat(r.rating)}
-            </p>
-
-            <p className="text-gray-600">{r.text}</p>
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-semibold text-slate-800">Recent Reviews</h2>
+            <p className="text-sm text-slate-500">{reviewCountLabel}</p>
           </div>
-        ))}
 
-      </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/practitioner/dashboard/reviews?scope=all"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              See All
+            </Link>
+            <Link
+              to="/practitioner/dashboard/reviews/learn-more"
+              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+            >
+              Learn More
+            </Link>
+          </div>
+        </div>
 
-      {/* Buttons */}
-      <div className="flex gap-4 mb-8">
-        <button className="border px-4 py-2 rounded">
-          See All
-        </button>
+        {isLoading || isFetching ? (
+          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-8 text-sm text-slate-500">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading reviews...
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-sm text-slate-500">
+            No reviews yet. Submit a review to start tracking patient feedback.
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {reviews.map((review) => (
+              <ReviewCard key={review._id} review={review} />
+            ))}
+          </div>
+        )}
+      </section>
 
-        <button className="bg-black text-white px-4 py-2 rounded">
-          Learn More
-        </button>
-      </div>
+      <section className="rounded-2xl border border-blue-100 bg-blue-50/60 p-6 shadow-sm">
+        <h2 className="text-2xl font-semibold text-slate-800">Add Your Review</h2>
 
-      {/* Add Review */}
-      <h2 className="text-2xl font-semibold mb-4">Add Your Review</h2>
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Patient Name</label>
+            <input
+              type="text"
+              value={form.patientName}
+              onChange={(event) => setForm((current) => ({ ...current, patientName: event.target.value }))}
+              placeholder="Enter patient name"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-blue-50 p-6 rounded shadow"
-      >
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Review Message</label>
+            <textarea
+              value={form.message}
+              onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
+              placeholder="Write your feedback"
+              rows={4}
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
 
-        {/* Name */}
-        <label className="block mb-2 font-medium">
-          Your Name
-        </label>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Rating</label>
+            <StarRating
+              value={form.rating}
+              onSelect={(value) => setForm((current) => ({ ...current, rating: value }))}
+            />
+          </div>
 
-        <input
-          type="text"
-          placeholder="Enter your name"
-          className="w-full border p-2 rounded mb-4"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+          {formError && <p className="text-sm text-rose-600">{formError}</p>}
 
-        {/* Review */}
-        <label className="block mb-2 font-medium">
-          Your Review
-        </label>
-
-        <textarea
-          placeholder="Write your review here"
-          className="w-full border p-2 rounded mb-4"
-          value={review}
-          onChange={(e) => setReview(e.target.value)}
-        />
-
-        <p className="text-sm text-gray-500 mb-4">
-          Be honest and constructive
-        </p>
-
-        {/* Rating */}
-        <label className="block mb-2 font-medium">
-          Rating
-        </label>
-
-        <div className="flex gap-4 mb-6">
-
-          {[1,2,3,4,5].map((star) => (
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              key={star}
-              onClick={() => setRating(star)}
-              className={`text-xl ${
-                rating >= star
-                  ? "text-yellow-500"
-                  : "text-gray-400"
-              }`}
+              onClick={handleCancel}
+              className="rounded-xl border border-slate-300 px-6 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white"
             >
-              ★
+              Cancel
             </button>
-          ))}
-
-        </div>
-
-        {/* Buttons */}
-        <div className="flex gap-4">
-
-          <button
-            type="button"
-            className="border px-6 py-2 rounded"
-            onClick={() => {
-              setName("");
-              setReview("");
-              setRating(0);
-            }}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            className="bg-black text-white px-6 py-2 rounded"
-          >
-            Submit Review
-          </button>
-
-        </div>
-
-      </form>
-
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-60"
+            >
+              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Submit Review
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 };

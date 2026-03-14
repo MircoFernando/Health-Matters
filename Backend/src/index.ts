@@ -13,6 +13,7 @@ import referralRoutes from './routes/referralRoutes';
 import serviceRoutes from './routes/serviceRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import medicalRecordRoutes from './routes/medicalRecordRoutes';
+import reviewRoutes from './routes/reviewRoutes';
 import { loggerMiddleware } from './middlewares/logger-middleware';
 import { clerkMiddleware } from '@clerk/express';
 import webHooksRouter from './middlewares/webhooks/webhooks';
@@ -46,6 +47,7 @@ server.use('/api/referrals', referralRoutes);
 server.use('/api/services', serviceRoutes);
 server.use('/api/notifications', notificationRoutes);
 server.use('/api/medical-records', medicalRecordRoutes);
+server.use('/api/reviews', reviewRoutes);
 
 // Global Error Handler (must be the last middleware)
 server.use(globalErrorHandlingMiddleware);

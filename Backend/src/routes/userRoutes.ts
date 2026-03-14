@@ -11,11 +11,14 @@ import {
 	updateUserByIdByAdmin,
 	updateUserRoleByAdmin,
 } from '../controllers/userController';
+import { requireAdminRole, requireClerkAuth } from '../middlewares/auth-middleware';
 
 const UserRouter = express.Router();
 
+UserRouter.use(requireClerkAuth);
+
 // GET /api/users - Get all users
-UserRouter.get('/', getAllUsers);
+UserRouter.get('/', requireAdminRole, getAllUsers);
 
 // GET /api/users/me - Get authenticated user by Clerk ID from token
 UserRouter.get('/me', getUserByClerkId);
@@ -24,24 +27,24 @@ UserRouter.get('/me', getUserByClerkId);
 UserRouter.put('/me', updateUserByClerkId);
 
 // POST /api/users - Create a user (admin only)
-UserRouter.post('/', createUserByAdmin);
+UserRouter.post('/', requireAdminRole, createUserByAdmin);
 
 // GET /api/users/:userId - Get one user (admin only)
-UserRouter.get('/:userId', getUserById);
+UserRouter.get('/:userId', requireAdminRole, getUserById);
 
 // PUT /api/users/:userId - Update user details (admin only)
-UserRouter.put('/:userId', updateUserByIdByAdmin);
+UserRouter.put('/:userId', requireAdminRole, updateUserByIdByAdmin);
 
 // PUT /api/users/:userId/role - Update user role and Clerk metadata (admin only)
-UserRouter.put('/:userId/role', updateUserRoleByAdmin);
+UserRouter.put('/:userId/role', requireAdminRole, updateUserRoleByAdmin);
 
 // PATCH /api/users/:userId/deactivate - Soft deactivate user (admin only)
-UserRouter.patch('/:userId/deactivate', deactivateUserByAdmin);
+UserRouter.patch('/:userId/deactivate', requireAdminRole, deactivateUserByAdmin);
 
 // DELETE /api/users/:userId - Delete user (admin only)
-UserRouter.delete('/:userId', deleteUserByAdmin);
+UserRouter.delete('/:userId', requireAdminRole, deleteUserByAdmin);
 
 // POST /api/users/:userId/manager - Assign manager relationship (admin only)
-UserRouter.post('/:userId/manager', assignUserManagerByAdmin);
+UserRouter.post('/:userId/manager', requireAdminRole, assignUserManagerByAdmin);
 
 export default UserRouter;

@@ -13,7 +13,7 @@ import {
 	updateReferralBodySchema,
 	updateReferralStatusBodySchema,
 } from '../Dtos/referral.dto';
-import { ValidationError, NotFoundError, UnauthorizedError } from '../errors/errors';
+import { ValidationError, NotFoundError, UnauthorizedError, BadRequestError } from '../errors/errors';
 import { getAuth } from '@clerk/express';
 
 const formatValidationErrors = (error: ZodError) =>
@@ -260,6 +260,16 @@ export const assignReferralById = async (req: Request, res: Response, next: Next
 		const { referralId } = parsedParams.data;
 		const { practitionerClerkUserId } = parsedBody.data;
 
+		const practitioner = await User.findOne({
+			clerkUserId: practitionerClerkUserId,
+			role: 'practitioner',
+			isActive: true,
+		});
+
+		if (!practitioner) {
+			throw new BadRequestError('Selected user is not an active practitioner');
+		}
+
 		const updatedReferral = await Referral.findByIdAndUpdate(
 			referralId,
 			{
@@ -279,7 +289,6 @@ export const assignReferralById = async (req: Request, res: Response, next: Next
 		// Create an in-app notification for the patient when a practitioner is assigned
 		try {
 			const patient = await User.findOne({ clerkUserId: updatedReferral.patientClerkUserId });
-			const practitioner = await User.findOne({ clerkUserId: practitionerClerkUserId });
 
 			if (patient) {
 				const practitionerName = practitioner

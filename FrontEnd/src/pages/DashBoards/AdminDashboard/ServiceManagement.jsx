@@ -135,8 +135,7 @@ export const ServiceManagement = () => {
         </div>
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            className="gap-2 text-slate-700 hover:text-slate-900 border-slate-300"
+            className="gap-2 border border-blue-700 bg-blue-600 text-white hover:bg-blue-700"
             onClick={refetch}
           >
             <RefreshCw className="h-4 w-4" />
@@ -249,14 +248,10 @@ export const ServiceManagement = () => {
             {CATEGORIES.map((category) => (
               <Button
                 key={category.value}
-                variant={selectedCategory === category.value ? "default" : "outline"}
+                variant="default"
                 size="sm"
                 onClick={() => setSelectedCategory(category.value)}
-                className={
-                  selectedCategory === category.value
-                    ? "bg-blue-600 hover:bg-blue-700 text-white"
-                    : "text-slate-700 hover:text-slate-900 border-slate-300"
-                }
+                className="bg-blue-600 text-white hover:bg-blue-700"
               >
                 {category.label}
               </Button>
@@ -348,7 +343,7 @@ export const ServiceManagement = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              className="border border-blue-700 bg-blue-600 text-white hover:bg-blue-700"
                               onClick={() => handleEdit(service)}
                             >
                               <Edit className="h-4 w-4" />
@@ -356,7 +351,7 @@ export const ServiceManagement = () => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              className="border border-red-700 bg-red-600 text-white hover:bg-red-700"
                               onClick={() => handleDelete(service._id)}
                               disabled={isDeleting}
                             >
@@ -477,7 +472,7 @@ const ServiceFormSheet = ({ service, onClose, createService, updateService, isCr
   return (
     <SheetContent 
       side="right" 
-      className="w-full sm:max-w-[540px] overflow-y-auto !bg-white shadow-xl border-l border-slate-200 p-0"
+      className="w-full sm:max-w-135 overflow-y-auto bg-white! shadow-xl border-l border-slate-200 p-0"
     >
       <div className="bg-white min-h-full">
         <SheetHeader className="pb-6 border-b border-slate-200 bg-white px-6 pt-6">
@@ -544,10 +539,10 @@ const ServiceFormSheet = ({ service, onClose, createService, updateService, isCr
               value={formData.category}
               onValueChange={(value) => handleChange("category", value)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full border-blue-200 bg-white text-slate-900 shadow-sm">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border border-blue-200 bg-white text-slate-900 shadow-xl">
                 {CATEGORIES.slice(1).map((cat) => (
                   <SelectItem key={cat.value} value={cat.value}>
                     {cat.label}
@@ -584,10 +579,10 @@ const ServiceFormSheet = ({ service, onClose, createService, updateService, isCr
               value={formData.isActive ? "active" : "inactive"}
               onValueChange={(value) => handleChange("isActive", value === "active")}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full border-blue-200 bg-white text-slate-900 shadow-sm">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border border-blue-200 bg-white text-slate-900 shadow-xl">
                 <SelectItem value="active">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-green-500"></div>
@@ -608,10 +603,10 @@ const ServiceFormSheet = ({ service, onClose, createService, updateService, isCr
           <SheetFooter className="flex gap-3 pt-6 border-t border-slate-200 bg-white px-6 pb-6 mt-8">
           <Button
             type="button"
-            variant="outline"
+            variant="default"
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 sm:flex-none"
+            className="flex-1 border border-blue-700 bg-blue-600 text-white hover:bg-blue-700 sm:flex-none"
           >
             Cancel
           </Button>

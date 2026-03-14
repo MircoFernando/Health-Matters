@@ -114,7 +114,7 @@ export const TestOverview = () => {
   }, [users, services, referrals, notifications]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rounded-2xl border border-blue-100/70 bg-white/80 p-4 shadow-sm backdrop-blur-sm md:p-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Overview</h1>
         <p className="mt-1 text-sm text-slate-600">
@@ -285,10 +285,10 @@ export const TestOverview = () => {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-base font-semibold text-slate-900">Quick Actions</h2>
             <div className="mt-3 grid gap-2">
-              <a href="/admin/dashboard/analytics" className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Open Analytics & KPI</a>
-              <a href="/admin/dashboard/services" className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Open Service Management</a>
-              <a href="/admin/dashboard/referrals" className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Open Referral Triage</a>
-              <a href="/admin/dashboard/users" className="rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Open User Role Console</a>
+              <a href="/admin/dashboard/analytics" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Analytics & KPI</a>
+              <a href="/admin/dashboard/services" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Service Management</a>
+              <a href="/admin/dashboard/referrals" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Referral Triage</a>
+              <a href="/admin/dashboard/users" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open User Role Console</a>
             </div>
           </div>
         </div>

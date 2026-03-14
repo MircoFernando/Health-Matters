@@ -17,6 +17,7 @@ const referralRoutes_1 = __importDefault(require("./routes/referralRoutes"));
 const serviceRoutes_1 = __importDefault(require("./routes/serviceRoutes"));
 const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
 const medicalRecordRoutes_1 = __importDefault(require("./routes/medicalRecordRoutes"));
+const reviewRoutes_1 = __importDefault(require("./routes/reviewRoutes"));
 const logger_middleware_1 = require("./middlewares/logger-middleware");
 const express_2 = require("@clerk/express");
 const webhooks_1 = __importDefault(require("./middlewares/webhooks/webhooks"));
@@ -44,6 +45,7 @@ server.use('/api/referrals', referralRoutes_1.default);
 server.use('/api/services', serviceRoutes_1.default);
 server.use('/api/notifications', notificationRoutes_1.default);
 server.use('/api/medical-records', medicalRecordRoutes_1.default);
+server.use('/api/reviews', reviewRoutes_1.default);
 // Global Error Handler (must be the last middleware)
 server.use(errors_1.globalErrorHandlingMiddleware);
 // Connect to Database & start server

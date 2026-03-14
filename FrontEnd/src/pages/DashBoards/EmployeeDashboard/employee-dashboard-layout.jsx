@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UserButton, useUser } from "@clerk/clerk-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import logoTrans from "../../../assets/Health matter logo_trans.png";
 
 const items = [
   {
@@ -69,9 +70,16 @@ const EmployeeDashboardLayout = () => {
         <div className="flex min-h-screen w-full bg-emerald-50">
           <Sidebar className="border-r border-emerald-800 bg-emerald-900 text-white">
             <SidebarHeader className="flex h-16 items-center border-b border-emerald-800 px-6">
-              <span className="text-lg font-bold tracking-wide text-white">
-                Employee Panel
-              </span>
+              <div className="flex w-full items-center gap-3">
+                <img
+                  src={logoTrans}
+                  alt="Health Matters"
+                  className="h-10 w-10 rounded-md bg-white/10 p-1 object-contain"
+                />
+                <span className="text-lg font-bold tracking-wide text-white">
+                  Employee Panel
+                </span>
+              </div>
             </SidebarHeader>
 
             <SidebarContent className="px-3 py-4">
@@ -129,18 +137,21 @@ const EmployeeDashboardLayout = () => {
           </Sidebar>
 
           <main className="flex flex-1 flex-col overflow-hidden">
-            {/* <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-emerald-200 bg-white px-6 shadow-sm">
+            <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-emerald-200 bg-white px-6 shadow-sm">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="text-emerald-900 hover:bg-emerald-50 hover:text-emerald-700" />
-                <h2 className="text-lg font-semibold text-slate-800">
-                  Dashboard
-                </h2>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-800">Dashboard</h2>
+                  <p className="text-xs text-slate-500">
+                    Signed in as {user?.fullName || user?.firstName || "User"}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-green-500"></span>
                 <span className="text-sm font-medium text-slate-600">Online</span>
               </div>
-            </header> */}
+            </header>
 
             <div className="flex-1 overflow-auto p-6">
               <Outlet />

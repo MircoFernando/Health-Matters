@@ -11,8 +11,11 @@ import {
   updateReferralByPatientId,
   updateReferralStatus,
 } from '../controllers/referralController';
+import { requireClerkAuth } from '../middlewares/auth-middleware';
 
 const ReferralRouter = express.Router();
+
+ReferralRouter.use(requireClerkAuth);
 
 // GET /api/referrals
 ReferralRouter.get('/', getAllReferrals);

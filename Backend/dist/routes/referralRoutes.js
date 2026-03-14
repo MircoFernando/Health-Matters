@@ -5,7 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const referralController_1 = require("../controllers/referralController");
+const auth_middleware_1 = require("../middlewares/auth-middleware");
 const ReferralRouter = express_1.default.Router();
+ReferralRouter.use(auth_middleware_1.requireClerkAuth);
 // GET /api/referrals
 ReferralRouter.get('/', referralController_1.getAllReferrals);
 // GET /api/referrals/my-submissions — MGR-005

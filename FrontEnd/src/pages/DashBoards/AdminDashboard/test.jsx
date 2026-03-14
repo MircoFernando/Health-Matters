@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { commonColors, tableTheme, cardTheme } from "@/lib/theme";
+import { commonColors, tableTheme } from "@/lib/theme";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Sheet,
@@ -57,6 +58,17 @@ export const TestFeature = () => {
  
   const [assignReferralById, { isLoading: isAssigning }] = useAssignReferralByIdMutation();
 
+  const availablePractitioners = useMemo(
+    () =>
+      practitioners.filter(
+        (practitioner) =>
+          practitioner?.role === "practitioner" &&
+          Boolean(practitioner?.clerkUserId) &&
+          practitioner?.isActive !== false
+      ),
+    [practitioners]
+  );
+
   const getReferralSource = (referral) => {
     const submittedBy = usersByClerkId.get(referral.submittedByClerkUserId);
     if (!submittedBy) return "external";
@@ -89,13 +101,13 @@ export const TestFeature = () => {
  
   const practitionersByClerkId = useMemo(() => {
     const map = new Map();
-    practitioners.forEach((practitioner) => {
+    availablePractitioners.forEach((practitioner) => {
       if (practitioner.clerkUserId) {
         map.set(practitioner.clerkUserId, practitioner);
       }
     });
     return map;
-  }, [practitioners]);
+  }, [availablePractitioners]);
  
   const openReferralDetails = (referral) => {
     setSelectedReferral(referral);
@@ -109,26 +121,31 @@ export const TestFeature = () => {
  
   const handleAssignPractitioner = async () => {
     if (!selectedReferral?._id || !selectedPractitionerId) return;
- 
-    await assignReferralById({
-      referralId: selectedReferral._id,
-      practitionerClerkUserId: selectedPractitionerId,
-    }).unwrap();
- 
-    await refetchReferrals();
- 
-    const assignedPractitioner = practitionersByClerkId.get(selectedPractitionerId);
-    setSelectedReferral((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
+
+    try {
+      await assignReferralById({
+        referralId: selectedReferral._id,
         practitionerClerkUserId: selectedPractitionerId,
-        assignedDate: new Date().toISOString(),
-        assignedPractitionerName: getFullName(assignedPractitioner),
-      };
-    });
- 
-    setSelectedPractitionerId("");
+      }).unwrap();
+
+      await refetchReferrals();
+
+      const assignedPractitioner = practitionersByClerkId.get(selectedPractitionerId);
+      setSelectedReferral((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          practitionerClerkUserId: selectedPractitionerId,
+          assignedDate: new Date().toISOString(),
+          assignedPractitionerName: getFullName(assignedPractitioner),
+        };
+      });
+
+      setSelectedPractitionerId("");
+      toast.success("Practitioner assigned successfully.");
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to assign practitioner.");
+    }
   };
 
   const filteredReferrals = useMemo(() => {
@@ -156,9 +173,21 @@ export const TestFeature = () => {
       return matchesSearch && matchesSource && matchesStatus;
     });
   }, [referrals, search, sourceFilter, statusFilter, usersByClerkId]);
+
+  const summary = useMemo(() => {
+    const pending = referrals.filter((referral) => getTriageStatus(referral) === "pending").length;
+    const unassigned = referrals.filter((referral) => !referral.practitionerClerkUserId).length;
+
+    return {
+      total: referrals.length,
+      pending,
+      unassigned,
+      practitioners: availablePractitioners.length,
+    };
+  }, [referrals, availablePractitioners]);
  
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rounded-2xl border border-blue-100/70 bg-white/80 p-4 shadow-sm backdrop-blur-sm md:p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Referral Management</h1>
@@ -166,10 +195,37 @@ export const TestFeature = () => {
             View, track, and assign referrals to practitioners.
           </p>
         </div>
-        <Button variant="outline" onClick={refetchReferrals}>Refresh</Button>
+        <Button className="border-blue-700 bg-blue-600 text-white hover:bg-blue-700" onClick={refetchReferrals}>Refresh</Button>
       </div>
 
-      <Card>
+      <Card className="border-blue-100 shadow-sm">
+        <CardHeader>
+          <CardTitle>Referral Snapshot</CardTitle>
+          <CardDescription>Quick visibility for current triage workload and staffing.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Total Referrals</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{summary.total}</p>
+            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-amber-700">Pending</p>
+              <p className="mt-2 text-2xl font-bold text-amber-900">{summary.pending}</p>
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-blue-700">Unassigned</p>
+              <p className="mt-2 text-2xl font-bold text-blue-900">{summary.unassigned}</p>
+            </div>
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Available Practitioners</p>
+              <p className="mt-2 text-2xl font-bold text-emerald-900">{summary.practitioners}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-blue-100 shadow-sm">
         <CardHeader>
           <CardTitle>Triage Filters</CardTitle>
           <CardDescription>Filter by source, status, and free-text search.</CardDescription>
@@ -184,10 +240,10 @@ export const TestFeature = () => {
               className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2"
             />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="border-blue-200 bg-white text-slate-900 shadow-sm">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border border-blue-200 bg-white text-slate-900 shadow-xl">
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="triage">Triage</SelectItem>
@@ -212,7 +268,7 @@ export const TestFeature = () => {
         </CardContent>
       </Card>
  
-      <Card>
+      <Card className="border-blue-100 shadow-sm">
         <CardHeader>
           <CardTitle>All Referrals</CardTitle>
           <CardDescription>
@@ -377,6 +433,15 @@ export const TestFeature = () => {
                 <p className="text-slate-500 text-sm">Notes</p>
                 <p className="text-slate-900 whitespace-pre-wrap">{selectedReferral.notes || "-"}</p>
               </div>
+
+              <div>
+                <p className="text-slate-500 text-sm">Assigned Practitioner</p>
+                <p className="text-slate-900 font-medium">
+                  {selectedReferral.practitionerClerkUserId
+                    ? getFullName(practitionersByClerkId.get(selectedReferral.practitionerClerkUserId))
+                    : "Unassigned"}
+                </p>
+              </div>
  
               {!selectedReferral.practitionerClerkUserId && (
                 <div className="space-y-2 rounded-lg border border-slate-200 p-3">
@@ -386,17 +451,22 @@ export const TestFeature = () => {
                     onValueChange={setSelectedPractitionerId}
                     disabled={isPractitionersLoading || isAssigning}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full border-blue-200 bg-white text-slate-900 shadow-sm">
                       <SelectValue placeholder="Select a practitioner" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {practitioners.map((practitioner) => (
+                    <SelectContent className="border border-blue-200 bg-white text-slate-900 shadow-xl">
+                      {availablePractitioners.map((practitioner) => (
                         <SelectItem key={practitioner._id} value={practitioner.clerkUserId}>
                           {getFullName(practitioner)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  {availablePractitioners.length === 0 && !isPractitionersLoading && (
+                    <p className="text-xs text-amber-700">
+                      No active practitioners are available for assignment.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -406,12 +476,13 @@ export const TestFeature = () => {
             {!selectedReferral?.practitionerClerkUserId && (
               <Button
                 onClick={handleAssignPractitioner}
-                disabled={!selectedPractitionerId || isAssigning}
+                disabled={!selectedPractitionerId || isAssigning || availablePractitioners.length === 0}
+                className="border-blue-700 bg-blue-600 text-white hover:bg-blue-700"
               >
                 {isAssigning ? "Saving..." : "Save Assignment"}
               </Button>
             )}
-            <Button variant="outline" onClick={closeReferralDetails}>
+            <Button className="border-blue-700 bg-blue-600 text-white hover:bg-blue-700" onClick={closeReferralDetails}>
               Close
             </Button>
           </SheetFooter>

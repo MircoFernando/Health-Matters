@@ -37,3 +37,8 @@ export {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
 } from './notificationsApi';
+
+export {
+  useGetReviewsQuery,
+  useCreateReviewMutation,
+} from './reviewsApi';
