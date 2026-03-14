@@ -8,8 +8,10 @@ export {
 
 export {
   useGetReferralsQuery,
+  useGetMyReferralsQuery,
   useGetReferralsByPatientIdQuery,
   useGetReferralsByPractitionerIdQuery,
+  useGetReferralByIdQuery,
   useCreateReferralMutation,
   useUpdateReferralsByPatientIdMutation,
   useAssignReferralByIdMutation,

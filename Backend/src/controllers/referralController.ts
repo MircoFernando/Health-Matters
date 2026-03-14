@@ -12,7 +12,7 @@ import {
 	updateReferralBodySchema,
 	updateReferralStatusBodySchema,
 } from '../Dtos/referral.dto';
-import { ValidationError, NotFoundError } from '../errors/errors';
+import { ValidationError, NotFoundError, UnauthorizedError } from '../errors/errors';
 import { getAuth } from '@clerk/express';
 
 const formatValidationErrors = (error: ZodError) =>
@@ -64,12 +64,10 @@ export const getReferralsByPractitionerId = async (
 
 		const { practitionerId } = parsedParams.data;
 
-		const referrals = await Referral.find({ practitionerClerkUserId: practitionerId }).sort({ createdAt: -1 });
-		res.status(200).json(referrals);
-	} catch (error) {
-		next(error);
-	}
-};
+    const newReferral = await Referral.create({
+      ...parsedBody.data,
+      submittedByClerkUserId: auth.userId,
+    });
 
 export const createReferral = async (req: Request, res: Response, next: NextFunction) => {
 	try {
@@ -302,86 +300,91 @@ export const assignReferralById = async (req: Request, res: Response, next: Next
 	}
 };
 
-export const updateReferralStatus = async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const parsedParams = referralIdParamsSchema.safeParse(req.params);
-		const parsedBody = updateReferralStatusBodySchema.safeParse(req.body);
+// MGR-005: Get referrals submitted by the currently authenticated manager.
+// SECURITY: Manager identity is derived from the Clerk token — no ID in the URL.
+export const getMySubmittedReferrals = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const auth = getAuth(req);
+    if (!auth.userId) {
+      throw new UnauthorizedError('Authentication required');
+    }
 
-		if (!parsedParams.success) {
-			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedParams.error)));
-		}
+    const parsedQuery = myReferralsQuerySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+      throw new ValidationError(JSON.stringify(formatValidationErrors(parsedQuery.error)));
+    }
 
-		if (!parsedBody.success) {
-			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedBody.error)));
-		}
+    const { status, serviceType, search, dateFrom, dateTo, page, limit } = parsedQuery.data;
 
-		const { referralId } = parsedParams.data;
-		const { referralStatus } = parsedBody.data;
+    // Identity comes from the token — never from a URL param
+    const filter: Record<string, unknown> = { submittedByClerkUserId: auth.userId };
 
-		// Fetch current referral to compare status
-		const currentReferral = await Referral.findById(referralId);
-		if (!currentReferral) {
-			throw new NotFoundError('Referral not found');
-		}
+    if (status) filter.referralStatus = status;
+    if (serviceType) filter.serviceType = serviceType;
 
-		// Prepare update object with status and appropriate date field
-		const updateData: any = { referralStatus };
+    if (dateFrom || dateTo) {
+      const dateFilter: Record<string, Date> = {};
+      if (dateFrom) dateFilter.$gte = dateFrom;
+      if (dateTo) dateFilter.$lte = dateTo;
+      filter.createdAt = dateFilter;
+    }
 
-		if (referralStatus === 'accepted') {
-			updateData.acceptedDate = new Date();
-		} else if (referralStatus === 'rejected') {
-			updateData.rejectedDate = new Date();
-		}
+    if (search) {
+      filter.$or = [
+        { patientClerkUserId: { $regex: search, $options: 'i' } },
+        ...(search.match(/^[a-f\d]{24}$/i) ? [{ _id: search }] : []),
+      ];
+    }
 
-		const updatedReferral = await Referral.findByIdAndUpdate(
-			referralId,
-			{ $set: updateData },
-			{ new: true, runValidators: true }
-		);
+    const skip = (page - 1) * limit;
 
-		if (!updatedReferral) {
-			throw new NotFoundError('Referral not found');
-		}
+    const [referrals, total] = await Promise.all([
+      Referral.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Referral.countDocuments(filter),
+    ]);
 
-		// Create notification when status changes (referral_triaged)
-		if (currentReferral.referralStatus !== referralStatus) {
-			try {
-				const patient = await User.findOne({ clerkUserId: updatedReferral.patientClerkUserId });
+    res.status(200).json({
+      data: referrals,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
-				if (patient) {
-					let title = '';
-					let message = '';
+// MGR-006: Get a single referral by ID — hides confidential self-referrals from managers
+export const getReferralById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsedParams = referralIdParamsSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new ValidationError(JSON.stringify(formatValidationErrors(parsedParams.error)));
+    }
 
-					if (referralStatus === 'accepted') {
-						title = 'Referral Accepted';
-						message = `Your referral has been accepted and is now in progress. Our team will be in touch with you shortly.`;
-					} else if (referralStatus === 'rejected') {
-						title = 'Referral Update';
-						message = `Your referral status has been updated. Please contact our team for more information.`;
-					}
+    const { referralId } = parsedParams.data;
+    const auth = getAuth(req);
 
-					await Notification.create({
-						recipientId: patient._id,
-						type: 'referral_triaged',
-						title,
-						message,
-						relatedEntityType: 'referral',
-						relatedEntityId: updatedReferral._id,
-						channels: {
-							email: { sent: false },
-							sms: { sent: false },
-							inApp: { read: false },
-						},
-						priority: 'high',
-					});
-				}
-			} catch (notificationError) {
-				console.error('Failed to create referral status notification:', notificationError);
-			}
-		}
+    const referral = await Referral.findById(referralId);
 
-		res.status(200).json(updatedReferral);
-	} catch (error) {
-		next(error);
-	}
+    if (!referral) {
+      throw new NotFoundError('Referral not found');
+    }
+
+    // Block manager from viewing confidential self-referrals
+    if (
+      referral.isConfidential &&
+      referral.submittedByClerkUserId !== auth.userId &&
+      referral.patientClerkUserId !== auth.userId
+    ) {
+      throw new NotFoundError('Referral not found');
+    }
+
+    res.status(200).json(referral);
+  } catch (error) {
+    next(error);
+  }
 };

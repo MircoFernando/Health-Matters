@@ -25,14 +25,9 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
-  pending:  { label: "Pending",     style: "bg-amber-100 text-amber-700"  },
-  accepted: { label: "In Progress", style: "bg-blue-100 text-blue-700"    },
-  rejected: { label: "Rejected",    style: "bg-red-100 text-red-700"      },
-  completed:{ label: "Completed",   style: "bg-green-100 text-green-700"  },
-  // Legacy keys from static data (capitalised)
-  Pending:    { label: "Pending",     style: "bg-amber-100 text-amber-700" },
-  "In Progress": { label: "In Progress", style: "bg-blue-100 text-blue-700" },
-  Completed:  { label: "Completed",   style: "bg-green-100 text-green-700" },
+  pending:     { label: "Pending",     style: "bg-amber-100 text-amber-700"  },
+  accepted:    { label: "Accepted",    style: "bg-blue-100 text-blue-700"    },
+  rejected:    { label: "Rejected",    style: "bg-red-100 text-red-700"      },
 };
 
 const StatusBadge = ({ status }) => {
@@ -142,11 +137,8 @@ export const ManagerOverview = () => {
       {/* Referral History Dashboard — fixed height with scroll */}
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-800">Referral History</h2>
-          <a
-            href="/manager/dashboard/referral"
-            className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
-          >
+          <h2 className="text-base font-semibold text-slate-800">My Referrals</h2>
+          <a href="/manager/dashboard/referral" className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700">
             New referral <ChevronRight className="h-4 w-4" />
           </a>
         </div>
@@ -268,7 +260,9 @@ export const ManagerReferralSubmission = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const selectedMember = TEAM_MEMBERS.find((m) => m.id === form.patientClerkUserId);
+  const [createReferral, { isLoading: submitting }] = useCreateReferralMutation();
+  const { data: teamMembers = [], isLoading: teamLoading } = useGetUsersQuery({ role: "employee" });
+  const selectedMember = teamMembers.find((m) => m.clerkUserId === form.patientClerkUserId);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -300,21 +294,19 @@ export const ManagerReferralSubmission = () => {
       form.absenceDays   ? `Days Absent: ${form.absenceDays}`                      : null,
       form.additionalInfo ? `Additional Info: ${form.additionalInfo}`              : null,
     ].filter(Boolean).join("\n\n");
-
-    // This is what will be sent to POST /api/manager/referrals (or /api/referrals)
-    const _payload = {
-      patientClerkUserId: form.patientClerkUserId,  // required
-      serviceType:        form.serviceType,
-      referralReason:     form.referralReason,
-      notes:              combinedNotes || undefined,
-      // submittedByClerkUserId is injected server-side from the Clerk token
-    };
-
-    setSubmitting(true);
-    // Simulated submission — swap for createManagerReferral(_payload).unwrap() when ready
-    await new Promise((res) => setTimeout(res, 1200));
-    setSubmitting(false);
-    setSubmitted(true);
+    try {
+      // SECURITY: submittedByClerkUserId is NOT sent — set server-side from Clerk token
+      const result = await createReferral({
+        patientClerkUserId: form.patientClerkUserId,
+        serviceType:        form.serviceType,
+        referralReason:     form.referralReason,
+        notes:              combinedNotes || undefined,
+      }).unwrap();
+      setSubmittedRef(result);
+      setSubmitted(true);
+    } catch (err) {
+      setErrors({ _server: err?.data?.message ?? "Submission failed. Please try again." });
+    }
   };
 
   const handleReset = () => {
@@ -611,7 +603,114 @@ export const ManagerReferralSubmission = () => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ACCESSIBILITY / SETTINGS PAGE
+// TEAM PAGE (simple card view — full health data version is in test-team.jsx)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ROLE_COLORS = {
+  employee:     "bg-blue-100 text-blue-700",
+  manager:      "bg-purple-100 text-purple-700",
+  practitioner: "bg-green-100 text-green-700",
+  admin:        "bg-amber-100 text-amber-700",
+};
+
+export const ManagerTestTeam = () => {
+  const [search, setSearch] = useState("");
+  const { data: users = [], isLoading, error } = useGetUsersQuery({ role: "employee" });
+
+  const filtered = users.filter((u) => {
+    const text = `${u.firstName ?? ""} ${u.lastName ?? ""} ${u.email ?? ""} ${u.department ?? ""}`.toLowerCase();
+    return text.includes(search.toLowerCase());
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Team</h1>
+          <p className="mt-1 text-sm text-slate-500">All employees in your organisation.</p>
+        </div>
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+          {isLoading ? "…" : `${filtered.length} member${filtered.length !== 1 ? "s" : ""}`}
+        </span>
+      </div>
+
+      <input
+        type="text"
+        placeholder="Search by name, email or department…"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-4 pr-4 text-sm text-slate-700 shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
+      />
+
+      {isLoading && (
+        <div className="flex items-center gap-2 py-12 text-sm text-slate-400">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading team members…
+        </div>
+      )}
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          <AlertCircle className="h-4 w-4 shrink-0" /> Failed to load team members.
+        </div>
+      )}
+      {!isLoading && !error && filtered.length === 0 && (
+        <div className="py-12 text-center text-sm text-slate-400">No team members found.</div>
+      )}
+      {!isLoading && !error && filtered.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((member) => {
+            const fullName = `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() || "Unknown";
+            const initials = [member.firstName?.[0], member.lastName?.[0]].filter(Boolean).join("").toUpperCase() || "?";
+            const roleStyle = ROLE_COLORS[member.role] ?? "bg-slate-100 text-slate-600";
+            return (
+              <div key={member._id ?? member.clerkUserId}
+                className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-slate-800 text-sm font-semibold text-white overflow-hidden">
+                    {member.profileImageUrl
+                      ? <img src={member.profileImageUrl} alt={fullName} className="h-11 w-11 rounded-full object-cover" />
+                      : initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-slate-800">{fullName}</p>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium capitalize ${roleStyle}`}>
+                        {member.role ?? "employee"}
+                      </span>
+                    </div>
+                    {member.jobTitle && <p className="mt-0.5 truncate text-xs text-slate-500">{member.jobTitle}</p>}
+                    <div className="mt-3 space-y-1.5">
+                      {member.email && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                          <Mail className="h-3 w-3 shrink-0 text-slate-400" />
+                          <span className="truncate">{member.email}</span>
+                        </div>
+                      )}
+                      {member.phone && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                          <Phone className="h-3 w-3 shrink-0 text-slate-400" />
+                          <span>{member.phone}</span>
+                        </div>
+                      )}
+                      {member.department && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                          <Building2 className="h-3 w-3 shrink-0 text-slate-400" />
+                          <span className="truncate">{member.department}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCESSIBILITY PAGE
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Toggle = ({ checked, onChange, id }) => (
