@@ -23,6 +23,7 @@ export {
   useAssignReferralByIdMutation,
   useDeleteReferralsByPatientIdMutation,
   useUpdateReferralStatusMutation,
+  useCancelReferralByIdMutation,
 } from './referralsApi';
 
 export {

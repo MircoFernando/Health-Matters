@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
-export const referralStatusSchema = z.enum(['pending', 'accepted', 'rejected']);
+export const referralStatusSchema = z.enum([
+  'pending',
+  'assigned',
+  'in_progress',
+  'completed',
+  'cancelled',
+  'accepted',
+  'rejected',
+]);
 
 const optionalDateSchema = z.coerce.date().optional();
 
@@ -56,4 +64,8 @@ export const myReferralsQuerySchema = z.object({
 });
 export const updateReferralStatusBodySchema = z.object({
   referralStatus: referralStatusSchema,
+});
+
+export const cancelReferralBodySchema = z.object({
+  reason: z.string().trim().min(1, 'Cancellation reason is required'),
 });

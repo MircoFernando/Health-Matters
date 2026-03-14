@@ -3,7 +3,10 @@ import { baseApi } from './baseApi';
 export const notificationsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query({
-      query: () => '/notifications',
+      query: (params = {}) => ({
+        url: '/notifications',
+        params,
+      }),
       providesTags: ['Notifications'],
     }),
     markNotificationRead: builder.mutation({
