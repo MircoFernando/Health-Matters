@@ -2,6 +2,7 @@ export { baseApi } from './baseApi';
 
 export {
   useGetUsersQuery,
+  useGetMeQuery,
   useUpdateMeMutation,
 } from './usersApi';
 
@@ -15,6 +16,7 @@ export {
   useUpdateReferralsByPatientIdMutation,
   useAssignReferralByIdMutation,
   useDeleteReferralsByPatientIdMutation,
+  useUpdateReferralStatusMutation,
 } from './referralsApi';
 
 export {
@@ -24,3 +26,8 @@ export {
   useUpdateServiceByIdMutation,
   useDeleteServiceByIdMutation,
 } from './servicesApi';
+
+export {
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+} from './notificationsApi';

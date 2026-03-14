@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { z } from "zod";
 
 export interface IAppointment extends Document {
   // References
@@ -51,14 +52,14 @@ const AppointmentSchema: Schema = new Schema(
       required: true
     },
     practitionerId: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: 'User',
       required: true
     },
     employeeId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+    type: String,
+    required: true,
+    index: true
     },
     
     // Scheduling

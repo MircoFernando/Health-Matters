@@ -17,8 +17,8 @@ const statusHistorySchema = new mongoose.Schema(
 const referralSchema = new mongoose.Schema(
   {
     patientClerkUserId: { type: String, required: true },
-    submittedByClerkUserId: { type: String },
-    practitionerClerkUserId: { type: String },
+    submittedByClerkUserId: { type: String},
+    practitionerClerkUserId: { type: String},
     serviceType: { type: String, trim: true },
     referralReason: { type: String, trim: true },
     referralStatus: {
@@ -32,8 +32,6 @@ const referralSchema = new mongoose.Schema(
     acceptedDate: { type: Date },
     rejectedDate: { type: Date },
     completedDate: { type: Date },
-    isConfidential: { type: Boolean, default: false },
-    statusHistory: { type: [statusHistorySchema], default: [] },
   },
   {
     timestamps: true,
@@ -41,5 +39,4 @@ const referralSchema = new mongoose.Schema(
 );
 
 export const Referral = mongoose.model('Referral', referralSchema);
-
 

@@ -9,6 +9,7 @@ import {
   getReferralsByPatientId,
   getReferralsByPractitionerId,
   updateReferralByPatientId,
+  updateReferralStatus,
 } from '../controllers/referralController';
 
 const ReferralRouter = express.Router();

@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-export const referralStatusSchema = z.enum([
-  'pending',
-  'accepted',
-  'rejected',
-  
-]);
+export const referralStatusSchema = z.enum(['pending', 'accepted', 'rejected']);
 
 const optionalDateSchema = z.coerce.date().optional();
 
@@ -20,9 +15,6 @@ export const practitionerIdParamsSchema = z.object({
 export const referralIdParamsSchema = z.object({
   referralId: z.string().trim().min(1, 'referralId is required'),
 });
-
-// managerIdParamsSchema intentionally removed —
-// manager identity is derived from the Clerk token, never passed as a URL param
 
 export const createReferralBodySchema = z.object({
   patientClerkUserId:      z.string().trim().min(1, 'patientClerkUserId is required'),
@@ -61,4 +53,7 @@ export const myReferralsQuerySchema = z.object({
   dateTo:      optionalDateSchema,
   page:        z.coerce.number().int().min(1).default(1),
   limit:       z.coerce.number().int().min(1).max(20).default(20),
+});
+export const updateReferralStatusBodySchema = z.object({
+  referralStatus: referralStatusSchema,
 });
