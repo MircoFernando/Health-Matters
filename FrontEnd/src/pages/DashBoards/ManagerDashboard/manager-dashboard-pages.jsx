@@ -19,34 +19,6 @@ const STATUS_CONFIG = {
   rejected: { label: "Rejected", style: "bg-red-100 text-red-700" },
 };
 
-const DUMMY_REFERRALS = [
-  {
-    _id: "demo-1",
-    patientClerkUserId: "employee-demo-1",
-    serviceType: "Mental Health & Wellbeing",
-    referralReason: "Workplace stress support",
-    referralStatus: "pending",
-    createdAt: "2026-03-01T09:00:00.000Z",
-  },
-  {
-    _id: "demo-2",
-    patientClerkUserId: "employee-demo-2",
-    serviceType: "Occupational Health",
-    referralReason: "Return-to-work assessment",
-    referralStatus: "in_progress",
-    createdAt: "2026-02-20T09:00:00.000Z",
-  },
-  {
-    _id: "demo-3",
-    patientClerkUserId: "employee-demo-3",
-    serviceType: "Physiotherapy",
-    referralReason: "Back pain review",
-    referralStatus: "completed",
-    createdAt: "2026-02-05T09:00:00.000Z",
-    completedDate: "2026-02-18T09:00:00.000Z",
-  },
-];
-
 const DUMMY_NOTIFICATIONS = [
   {
     _id: "note-demo-1",
@@ -102,21 +74,20 @@ export const ManagerOverview = () => {
   const referrals = getReferralsArray(myReferralsResponse);
   const notifications = Array.isArray(notificationsResponse) ? notificationsResponse : [];
 
-  const safeReferrals = referrals.length > 0 ? referrals : DUMMY_REFERRALS;
   const safeNotifications = notifications.length > 0 ? notifications : DUMMY_NOTIFICATIONS;
 
   const summary = useMemo(() => {
-    const active = safeReferrals.filter((r) => ["pending", "assigned", "in_progress", "accepted"].includes(r.referralStatus)).length;
-    const completed = safeReferrals.filter((r) => r.referralStatus === "completed").length;
-    const cancelled = safeReferrals.filter((r) => r.referralStatus === "cancelled").length;
+    const active = referrals.filter((r) => ["pending", "assigned", "in_progress", "accepted"].includes(r.referralStatus)).length;
+    const completed = referrals.filter((r) => r.referralStatus === "completed").length;
+    const cancelled = referrals.filter((r) => r.referralStatus === "cancelled").length;
 
     return {
-      total: safeReferrals.length,
+      total: referrals.length,
       active,
       completed,
       cancelled,
     };
-  }, [safeReferrals]);
+  }, [referrals]);
 
   const openNotificationReferral = async (notification) => {
     if (!notification?.relatedEntityId) return;
@@ -175,7 +146,7 @@ export const ManagerOverview = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {safeReferrals.map((ref) => (
+                {referrals.map((ref) => (
                   <tr key={ref._id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{String(ref._id).slice(-8).toUpperCase()}</td>
                     <td className="px-4 py-3 text-slate-700">{ref.serviceType || "-"}</td>
@@ -183,6 +154,13 @@ export const ManagerOverview = () => {
                     <td className="px-4 py-3"><StatusBadge status={ref.referralStatus} /></td>
                   </tr>
                 ))}
+                {!referralsLoading && referrals.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-slate-500">
+                      you have not submitted any refferals
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -300,7 +278,6 @@ export const ManagerReferralSubmission = () => {
 
   const teamMembers = users.length > 0 ? users : FALLBACK_TEAM;
   const myReferrals = getReferralsArray(myReferralsResponse);
-  const safeReferrals = myReferrals.length > 0 ? myReferrals : DUMMY_REFERRALS;
 
   useEffect(() => {
     if (!linkedNotificationId) return;
@@ -457,7 +434,7 @@ export const ManagerReferralSubmission = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {safeReferrals.map((ref) => {
+                {myReferrals.map((ref) => {
                   const isPending = ref.referralStatus === "pending";
                   const isHighlighted = highlightedReferralId === String(ref._id);
 
@@ -485,6 +462,13 @@ export const ManagerReferralSubmission = () => {
                     </tr>
                   );
                 })}
+                {myReferrals.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-slate-500">
+                      you have not submitted any refferals
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
