@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
+import { useUser } from "@clerk/clerk-react";
 import { Link, useSearchParams } from "react-router";
 import { Loader2, Star } from "lucide-react";
-import { useCreateReviewMutation, useGetReviewsQuery } from "../../../store/api/reviewsApi";
+import {
+  useCreateReviewMutation,
+  useGetAppointmentsByPractitionerIdQuery,
+  useGetReviewsQuery,
+} from "../../../store/api";
 
 /*
  Team J - Recent review cards, review submission form, and star-rating interaction UI (TMJ-001, TMJ-002, TMJ-003) . Done by Yahanima, Senithi, Irindu, Dulmin, and Akith
@@ -47,6 +52,7 @@ const ReviewCard = ({ review }) => (
 );
 
 export const PractitionerTestReviews = () => {
+  const { user } = useUser();
   const [searchParams] = useSearchParams();
   const showAll = searchParams.get("scope") === "all";
   const limit = showAll ? 100 : 4;
@@ -55,7 +61,20 @@ export const PractitionerTestReviews = () => {
   const [formError, setFormError] = useState("");
 
   const { data: reviews = [], isLoading, isFetching } = useGetReviewsQuery({ limit });
+  const { data: appointments = [] } = useGetAppointmentsByPractitionerIdQuery(user?.id, { skip: !user?.id });
   const [createReview, { isLoading: isSubmitting }] = useCreateReviewMutation();
+
+  const knownPatients = useMemo(() => {
+    const names = appointments
+      .map((appointment) => appointment?.patient?.fullName)
+      .filter((name) => typeof name === "string" && name.trim().length > 0);
+    return [...new Set(names.map((name) => name.trim()))].sort((a, b) => a.localeCompare(b));
+  }, [appointments]);
+
+  const knownPatientNames = useMemo(
+    () => knownPatients.map((name) => name.toLowerCase()),
+    [knownPatients]
+  );
 
   const reviewCountLabel = useMemo(() => {
     if (showAll) return `${reviews.length} total reviews`;
@@ -72,6 +91,11 @@ export const PractitionerTestReviews = () => {
 
     if (!form.patientName.trim() || !form.message.trim() || form.rating < 1) {
       setFormError("Patient name, review message, and a star rating are required.");
+      return;
+    }
+
+    if (!knownPatientNames.includes(form.patientName.trim().toLowerCase())) {
+      setFormError("Patient name not found. Please enter an existing patient name.");
       return;
     }
 
@@ -143,13 +167,18 @@ export const PractitionerTestReviews = () => {
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">Patient Name</label>
-            <input
-              type="text"
+            <select
               value={form.patientName}
               onChange={(event) => setForm((current) => ({ ...current, patientName: event.target.value }))}
-              placeholder="Enter patient name"
               className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-300"
-            />
+            >
+              <option value="">Select patient from your appointments</option>
+              {knownPatients.map((patientName) => (
+                <option key={patientName} value={patientName}>
+                  {patientName}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

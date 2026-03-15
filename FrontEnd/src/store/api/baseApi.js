@@ -1,6 +1,16 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const isDevelopment = import.meta.env.DEV;
+
+// In development, always use relative /api so Vite proxy handles backend routing.
+const baseUrl = (
+  isDevelopment
+    ? '/api'
+    : configuredBaseUrl && configuredBaseUrl.trim()
+      ? configuredBaseUrl
+      : '/api'
+).replace(/\/$/, '');
 
 console.log('RTK Query baseUrl:', baseUrl);
 

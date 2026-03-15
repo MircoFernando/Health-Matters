@@ -12,6 +12,12 @@ export interface IAppointment extends Document {
   scheduledTime: string;
   duration: number;
   endTime: Date;
+
+  // Referral snapshot
+  serviceType?: string;
+  referralReason?: string;
+  assignmentSource?: 'admin' | 'claimed';
+  assignedByClerkUserId?: string;
   
   // Location & Format
   location?: string;
@@ -81,6 +87,25 @@ const AppointmentSchema: Schema = new Schema(
     endTime: {
       type: Date,
       required: true
+    },
+
+    // Referral snapshot
+    serviceType: {
+      type: String,
+      trim: true,
+    },
+    referralReason: {
+      type: String,
+      trim: true,
+    },
+    assignmentSource: {
+      type: String,
+      enum: ['admin', 'claimed'],
+      default: 'admin',
+    },
+    assignedByClerkUserId: {
+      type: String,
+      trim: true,
     },
     
     // Location & Format

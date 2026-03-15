@@ -4,12 +4,12 @@ export const appointmentsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
     getAppointmentsByEmployeeId: builder.query({
-      query: (employeeId) => `/appointments/employee/${employeeId}`,
+      query: () => '/appointments/employee/me',
       providesTags: ['Appointments'],
     }),
 
     getAppointmentsByPractitionerId: builder.query({
-      query: (practitionerId) => `/appointments/practitioner/${practitionerId}`,
+      query: () => '/appointments/practitioner/me',
       providesTags: ['Appointments'],
     }),
 

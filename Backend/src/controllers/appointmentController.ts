@@ -1,4 +1,5 @@
 import Appointment from "../models/Appointment";
+import { User } from "../models/User";
 import { Request, Response } from "express";
 import { getAuth } from "@clerk/express";
 
@@ -23,6 +24,48 @@ const toPractitionerView = (appointment: any) => {
   };
 };
 
+const loadPractitionerAppointments = async (practitionerId: string) => {
+  const appointments = await Appointment.find({ practitionerId })
+    .populate("referralId", "serviceType referralReason")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const patientClerkUserIds = [...new Set(appointments.map((appointment: any) => appointment.employeeId).filter(Boolean))];
+  const patientUsers = await User.find({ clerkUserId: { $in: patientClerkUserIds } })
+    .select("clerkUserId firstName lastName email phone department")
+    .lean();
+
+  const patientMap = new Map(patientUsers.map((patient: any) => [patient.clerkUserId, patient]));
+
+  return appointments.map((appointment: any) => {
+    const mapped = toPractitionerView(appointment);
+    const patient = patientMap.get(mapped.patientClerkUserId);
+
+    return {
+      ...mapped,
+      patient: patient
+        ? {
+            clerkUserId: patient.clerkUserId,
+            firstName: patient.firstName || "",
+            lastName: patient.lastName || "",
+            fullName: `${patient.firstName || ""} ${patient.lastName || ""}`.trim() || "Unknown",
+            email: patient.email || "",
+            phone: patient.phone || "",
+            department: patient.department || "",
+          }
+        : {
+            clerkUserId: mapped.patientClerkUserId,
+            firstName: "",
+            lastName: "",
+            fullName: "Unknown",
+            email: "",
+            phone: "",
+            department: "",
+          },
+    };
+  });
+};
+
 // Get appointments for an employee (patient timeline)
 
 export const getAppointmentsByEmployeeId = async (
@@ -34,13 +77,38 @@ export const getAppointmentsByEmployeeId = async (
 
     const { employeeId } = req.params;
 
-    const appointments = await Appointment.find({
-      employeeId
-    })
-      .populate("practitionerId", "firstName lastName")
-      .sort({ scheduledDate: -1 });
+    const appointments = await Appointment.find({ employeeId })
+      .sort({ scheduledDate: -1 })
+      .lean();
 
-    res.status(200).json(appointments);
+    const practitionerClerkUserIds = [
+      ...new Set(appointments.map((appointment: any) => appointment.practitionerId).filter(Boolean)),
+    ];
+
+    const practitioners = await User.find({ clerkUserId: { $in: practitionerClerkUserIds } })
+      .select("clerkUserId firstName lastName")
+      .lean();
+
+    const practitionerMap = new Map(
+      practitioners.map((practitioner: any) => [practitioner.clerkUserId, practitioner])
+    );
+
+    const enrichedAppointments = appointments.map((appointment: any) => {
+      const practitioner = practitionerMap.get(appointment.practitionerId);
+
+      return {
+        ...appointment,
+        practitionerId: practitioner
+          ? {
+              clerkUserId: practitioner.clerkUserId,
+              firstName: practitioner.firstName || "",
+              lastName: practitioner.lastName || "",
+            }
+          : null,
+      };
+    });
+
+    res.status(200).json(enrichedAppointments);
 
   } catch (error) {
 
@@ -53,16 +121,87 @@ export const getAppointmentsByEmployeeId = async (
 
 };
 
+export const getMyEmployeeAppointments = async (req: Request, res: Response) => {
+  try {
+    const auth = getAuth(req);
+    if (!auth.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const appointments = await Appointment.find({ employeeId: auth.userId })
+      .sort({ scheduledDate: -1 })
+      .lean();
+
+    const practitionerClerkUserIds = [
+      ...new Set(appointments.map((appointment: any) => appointment.practitionerId).filter(Boolean)),
+    ];
+
+    const practitioners = await User.find({ clerkUserId: { $in: practitionerClerkUserIds } })
+      .select("clerkUserId firstName lastName")
+      .lean();
+
+    const practitionerMap = new Map(
+      practitioners.map((practitioner: any) => [practitioner.clerkUserId, practitioner])
+    );
+
+    const enrichedAppointments = appointments.map((appointment: any) => {
+      const practitioner = practitionerMap.get(appointment.practitionerId);
+
+      return {
+        ...appointment,
+        practitionerId: practitioner
+          ? {
+              clerkUserId: practitioner.clerkUserId,
+              firstName: practitioner.firstName || "",
+              lastName: practitioner.lastName || "",
+            }
+          : null,
+      };
+    });
+
+    res.status(200).json(enrichedAppointments);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch appointments",
+      error,
+    });
+  }
+};
+
 export const getAppointmentsByPractitionerId = async (req: Request, res: Response) => {
   try {
     const { practitionerId } = req.params;
 
-    const appointments = await Appointment.find({ practitionerId })
-      .populate("referralId", "serviceType referralReason")
-      .sort({ createdAt: -1 })
-      .lean();
+    const auth = getAuth(req);
+    if (!auth.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
-    res.status(200).json(appointments.map(toPractitionerView));
+    if (auth.userId !== practitionerId) {
+      return res.status(403).json({ message: "You can only access your own appointments" });
+    }
+
+    const practitionerView = await loadPractitionerAppointments(practitionerId);
+
+    res.status(200).json(practitionerView);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch practitioner appointments",
+      error,
+    });
+  }
+};
+
+export const getMyPractitionerAppointments = async (req: Request, res: Response) => {
+  try {
+    const auth = getAuth(req);
+    if (!auth.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const practitionerView = await loadPractitionerAppointments(auth.userId);
+
+    res.status(200).json(practitionerView);
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch practitioner appointments",

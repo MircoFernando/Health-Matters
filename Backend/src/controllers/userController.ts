@@ -28,6 +28,52 @@ const formatValidationErrors = (error: ZodError) =>
 const normalizeRole = (value: unknown) =>
 	typeof value === 'string' ? value.trim().toLowerCase() : undefined;
 
+const USER_DIRECTORY_ROLES = ['admin', 'manager', 'employee', 'practitioner'];
+
+const requireManagerOrAdmin = async (req: Request) => {
+	const auth = getAuth(req);
+	if (!auth.userId) {
+		throw new UnauthorizedError('Authentication required');
+	}
+
+	let actor = await User.findOne({ clerkUserId: auth.userId });
+	const actorRole = normalizeRole(actor?.role);
+	if (actorRole === 'admin' || actorRole === 'manager') {
+		return { actor, role: actorRole as 'admin' | 'manager' };
+	}
+
+	const clerkUser = await clerkClient.users.getUser(auth.userId);
+	const clerkRole = normalizeRole(clerkUser.publicMetadata?.role);
+	if (clerkRole !== 'admin' && clerkRole !== 'manager') {
+		throw new ForbiddenError('Manager or admin access required');
+	}
+
+	const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+	if (!email) {
+		throw new UnauthorizedError('Authenticated user has no email in Clerk');
+	}
+
+	if (!actor) {
+		const existingByEmail = await User.findOne({ email });
+		if (existingByEmail) {
+			existingByEmail.clerkUserId = auth.userId;
+			existingByEmail.role = clerkRole;
+			actor = await existingByEmail.save();
+		} else {
+			actor = await User.create({
+				clerkUserId: auth.userId,
+				email,
+				firstName: clerkUser.firstName ?? undefined,
+				lastName: clerkUser.lastName ?? undefined,
+				role: clerkRole,
+				isActive: true,
+			});
+		}
+	}
+
+	return { actor, role: clerkRole as 'admin' | 'manager' };
+};
+
 const requireAdmin = async (req: Request) => {
 	const auth = getAuth(req);
 	if (!auth.userId) {
@@ -84,7 +130,7 @@ const requireAdmin = async (req: Request) => {
 
 export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-		await requireAdmin(req);
+		const { role: actorRole, actor } = await requireManagerOrAdmin(req);
 
     const parsedQuery = getUsersQuerySchema.safeParse(req.query);
 
@@ -92,7 +138,40 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
       throw new ValidationError(JSON.stringify(formatValidationErrors(parsedQuery.error)));
     }
 
-    const users = await User.find(parsedQuery.data);
+    const queryFilter: Record<string, unknown> = { ...parsedQuery.data };
+
+		if (actorRole === 'manager') {
+			const requestedRole = normalizeRole(parsedQuery.data.role);
+			const allowedRoles = ['employee', 'practitioner'];
+
+			if (requestedRole && !allowedRoles.includes(requestedRole)) {
+				throw new ForbiddenError('Managers can only list employees or practitioners');
+			}
+
+			if (!requestedRole) {
+				queryFilter.role = { $in: allowedRoles };
+			}
+
+			if (queryFilter.isActive === undefined) {
+				queryFilter.isActive = true;
+			}
+
+			// If employee-manager links exist, return the manager's direct employees first.
+			if ((queryFilter.role === 'employee' || (queryFilter.role as any)?.$in) && actor?.clerkUserId) {
+				const managerScopedFilter = {
+					...queryFilter,
+					$or: [
+						{ managerClerkUserId: actor.clerkUserId },
+						{ managerClerkUserId: { $exists: false } },
+						{ managerClerkUserId: null },
+					],
+				};
+				const users = await User.find(managerScopedFilter);
+				return res.status(200).json(users);
+			}
+		}
+
+    const users = await User.find(queryFilter);
     res.status(200).json(users);
   } catch (error) {
     next(error);
@@ -466,6 +545,34 @@ export const assignUserManagerByAdmin = async (req: Request, res: Response, next
 		}
 
 		res.status(200).json(updatedUser);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const getUserDirectory = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const auth = getAuth(req);
+		if (!auth.userId) {
+			throw new UnauthorizedError('Authentication required');
+		}
+
+		const requestedRole = normalizeRole(req.query.role);
+		if (requestedRole && !USER_DIRECTORY_ROLES.includes(requestedRole)) {
+			throw new ValidationError('Invalid role filter');
+		}
+
+		const filter: Record<string, unknown> = { isActive: true };
+		if (requestedRole) {
+			filter.role = requestedRole;
+		}
+
+		const users = await User.find(filter)
+			.select('clerkUserId firstName lastName email role department isActive')
+			.sort({ firstName: 1, lastName: 1 })
+			.lean();
+
+		res.status(200).json(users);
 	} catch (error) {
 		next(error);
 	}

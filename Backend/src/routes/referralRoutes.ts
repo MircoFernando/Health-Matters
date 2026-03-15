@@ -3,8 +3,11 @@ import {
   assignReferralById,
   cancelReferralByManager,
   createReferral,
+  deleteMySubmittedReferralById,
   deleteReferralByPatientId,
   getAllReferrals,
+  getAvailableReferralsForPractitioner,
+  getMyPatientReferrals,
   getReferralById,
   getMySubmittedReferrals,
   getReferralsByPatientId,
@@ -27,8 +30,15 @@ ReferralRouter.get('/', getAllReferrals);
 // Optional query params: status, serviceType, search, dateFrom, dateTo, page, limit
 ReferralRouter.get('/my-submissions', getMySubmittedReferrals);
 
+// GET /api/referrals/my-patient-referrals
+// Returns referrals where the authenticated user is the patient.
+ReferralRouter.get('/my-patient-referrals', getMyPatientReferrals);
+
 // GET /api/referrals/patient/:patientId
 ReferralRouter.get('/patient/:patientId', getReferralsByPatientId);
+
+// GET /api/referrals/practitioner/:practitionerId
+ReferralRouter.get('/practitioner/available', getAvailableReferralsForPractitioner);
 
 // GET /api/referrals/practitioner/:practitionerId
 ReferralRouter.get('/practitioner/:practitionerId', getReferralsByPractitionerId);
@@ -44,6 +54,9 @@ ReferralRouter.put('/patient/:patientId', updateReferralByPatientId);
 
 // DELETE /api/referrals/patient/:patientId
 ReferralRouter.delete('/patient/:patientId', deleteReferralByPatientId);
+
+// DELETE /api/referrals/:referralId - manager can delete own unprocessed referral
+ReferralRouter.delete('/:referralId', deleteMySubmittedReferralById);
 
 // PUT /api/referrals/:referralId/assign
 ReferralRouter.put('/:referralId/assign', assignReferralById);

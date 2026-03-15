@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { Referral } from '../models/Referral';
+import Appointment from '../models/Appointment';
 import Notification from '../models/Notification';
 import { User } from '../models/User';
 import { ZodError } from 'zod';
@@ -15,7 +16,7 @@ import {
 	updateReferralStatusBodySchema,
 } from '../Dtos/referral.dto';
 import { ValidationError, NotFoundError, UnauthorizedError, BadRequestError } from '../errors/errors';
-import { getAuth } from '@clerk/express';
+import { clerkClient, getAuth } from '@clerk/express';
 
 /*
  Team A - Manager referral submission and lifecycle workflows (TMA-001, TMA-002, TMA-003, TMA-004, TMA-005, TMA-006) . Done by Mahdi and Savindu
@@ -31,6 +32,32 @@ const formatValidationErrors = (error: ZodError) =>
 		field: issue.path.join('.'),
 		message: issue.message,
 	}));
+
+const normalizeRole = (value: unknown) =>
+	typeof value === 'string' ? value.trim().toLowerCase() : '';
+
+const isPractitionerRole = (role: string) => role === 'practitioner' || role === 'practicioner';
+
+const resolveActorRole = async (clerkUserId?: string) => {
+	if (!clerkUserId) return '';
+
+	const dbUser = await User.findOne({ clerkUserId }).select('role').lean();
+	const dbRole = normalizeRole(dbUser?.role);
+	let clerkRole = '';
+
+	try {
+		const clerkUser = await clerkClient.users.getUser(clerkUserId);
+		clerkRole = normalizeRole(clerkUser?.publicMetadata?.role);
+	} catch {
+		clerkRole = '';
+	}
+
+	if (isPractitionerRole(dbRole) || isPractitionerRole(clerkRole)) {
+		return 'practitioner';
+	}
+
+	return dbRole || clerkRole;
+};
 
 const STATUS_NOTIFICATION_LABELS: Record<string, string> = {
 	assigned: 'Assigned',
@@ -71,6 +98,51 @@ const createReferralNotification = async (
 		relatedEntityId: referralId,
 		channels: buildNotificationChannels(recipient),
 		priority,
+	});
+};
+
+const buildDefaultAppointmentSchedule = () => {
+	const scheduledDate = new Date();
+	scheduledDate.setDate(scheduledDate.getDate() + 1);
+	scheduledDate.setHours(9, 0, 0, 0);
+
+	const endTime = new Date(scheduledDate);
+	endTime.setMinutes(endTime.getMinutes() + 30);
+
+	return {
+		scheduledDate,
+		scheduledTime: '09:00',
+		endTime,
+		duration: 30,
+	};
+};
+
+const ensureAppointmentForReferral = async (referral: any, actorClerkUserId?: string) => {
+	if (!referral?.practitionerClerkUserId || !referral?.patientClerkUserId) {
+		return null;
+	}
+
+	const existingAppointment = await Appointment.findOne({ referralId: referral._id });
+	if (existingAppointment) {
+		return existingAppointment;
+	}
+
+	const schedule = buildDefaultAppointmentSchedule();
+
+	return Appointment.create({
+		referralId: referral._id,
+		practitionerId: referral.practitionerClerkUserId,
+		employeeId: referral.patientClerkUserId,
+		scheduledDate: schedule.scheduledDate,
+		scheduledTime: schedule.scheduledTime,
+		endTime: schedule.endTime,
+		duration: schedule.duration,
+		appointmentType: 'in_person',
+		status: 'scheduled',
+		serviceType: referral.serviceType || undefined,
+		referralReason: referral.referralReason || undefined,
+		assignmentSource: actorClerkUserId && actorClerkUserId === referral.practitionerClerkUserId ? 'claimed' : 'admin',
+		assignedByClerkUserId: actorClerkUserId || undefined,
 	});
 };
 
@@ -140,6 +212,41 @@ export const getReferralsByPractitionerId = async (
 
 		const { practitionerId } = parsedParams.data;
 		const referrals = await Referral.find({ practitionerClerkUserId: practitionerId }).sort({ createdAt: -1 });
+		res.status(200).json(referrals);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const getAvailableReferralsForPractitioner = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const auth = getAuth(req);
+		if (!auth.userId) {
+			throw new UnauthorizedError('Authentication required');
+		}
+
+		const referrals = await Referral.find({
+			$or: [
+				{ practitionerClerkUserId: auth.userId },
+				{
+					$and: [
+						{ referralStatus: 'pending' },
+						{
+							$or: [
+								{ practitionerClerkUserId: { $exists: false } },
+								{ practitionerClerkUserId: null },
+								{ practitionerClerkUserId: '' },
+							],
+						},
+					],
+				},
+			],
+		}).sort({ createdAt: -1 });
+
 		res.status(200).json(referrals);
 	} catch (error) {
 		next(error);
@@ -362,6 +469,8 @@ export const assignReferralById = async (req: Request, res: Response, next: Next
 			throw new NotFoundError('Referral not found');
 		}
 
+		await ensureAppointmentForReferral(updatedReferral, auth.userId || undefined);
+
 		// Create an in-app notification for the patient when a practitioner is assigned
 		try {
 			const patient = await User.findOne({ clerkUserId: updatedReferral.patientClerkUserId });
@@ -486,6 +595,45 @@ export const cancelReferralByManager = async (req: Request, res: Response, next:
 	}
 };
 
+export const deleteMySubmittedReferralById = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const parsedParams = referralIdParamsSchema.safeParse(req.params);
+		const auth = getAuth(req);
+
+		if (!auth.userId) {
+			throw new UnauthorizedError('Authentication required');
+		}
+
+		if (!parsedParams.success) {
+			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedParams.error)));
+		}
+
+		const { referralId } = parsedParams.data;
+
+		const referral = await Referral.findById(referralId);
+		if (!referral) {
+			throw new NotFoundError('Referral not found');
+		}
+
+		if (referral.submittedByClerkUserId !== auth.userId) {
+			throw new UnauthorizedError('You can only delete referrals submitted by you');
+		}
+
+		if (['assigned', 'in_progress', 'completed'].includes(referral.referralStatus)) {
+			throw new BadRequestError('Processed referrals cannot be deleted');
+		}
+
+		await Referral.findByIdAndDelete(referralId);
+
+		res.status(200).json({
+			message: 'Referral deleted successfully',
+			referralId,
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
 // MGR-005: Get referrals submitted by the currently authenticated manager.
 // SECURITY: Manager identity is derived from the Clerk token — no ID in the URL.
 export const getMySubmittedReferrals = async (req: Request, res: Response, next: NextFunction) => {
@@ -543,6 +691,22 @@ export const getMySubmittedReferrals = async (req: Request, res: Response, next:
   }
 };
 
+// EMP-REF-001: Get referrals where the authenticated user is the patient.
+// SECURITY: Identity is always derived from Clerk token, never from URL params.
+export const getMyPatientReferrals = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const auth = getAuth(req);
+		if (!auth.userId) {
+			throw new UnauthorizedError('Authentication required');
+		}
+
+		const referrals = await Referral.find({ patientClerkUserId: auth.userId }).sort({ createdAt: -1 });
+		res.status(200).json(referrals);
+	} catch (error) {
+		next(error);
+	}
+};
+
 // MGR-006: Get a single referral by ID — hides confidential self-referrals from managers
 export const getReferralById = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -591,10 +755,26 @@ export const updateReferralStatus = async (req: Request, res: Response, next: Ne
 
 		const { referralId } = parsedParams.data;
 		const { referralStatus } = parsedBody.data;
+		const actorRole = await resolveActorRole(auth.userId || undefined);
 		const existingReferral = await Referral.findById(referralId);
 
 		if (!existingReferral) {
 			throw new NotFoundError('Referral not found');
+		}
+
+		const isPractitionerDecision = ['accepted', 'rejected'].includes(referralStatus);
+
+		if (isPractitionerDecision) {
+			if (actorRole && !isPractitionerRole(actorRole)) {
+				throw new UnauthorizedError('Only practitioners can accept or reject referrals');
+			}
+
+			if (
+				existingReferral.practitionerClerkUserId &&
+				existingReferral.practitionerClerkUserId !== auth.userId
+			) {
+				throw new UnauthorizedError('This referral is assigned to a different practitioner');
+			}
 		}
 
 		const previousStatus = existingReferral.referralStatus;
@@ -628,6 +808,14 @@ export const updateReferralStatus = async (req: Request, res: Response, next: Ne
 			{
 				$set: {
 					referralStatus,
+					practitionerClerkUserId:
+						isPractitionerDecision
+							? auth.userId
+							: existingReferral.practitionerClerkUserId,
+					assignedDate:
+						isPractitionerDecision
+							? existingReferral.assignedDate || new Date()
+							: existingReferral.assignedDate,
 					changedByClerkUserId: auth.userId || undefined,
 					...dateUpdate,
 				},
@@ -637,6 +825,10 @@ export const updateReferralStatus = async (req: Request, res: Response, next: Ne
 
 		if (!updatedReferral) {
 			throw new NotFoundError('Referral not found');
+		}
+
+		if (referralStatus === 'accepted' || referralStatus === 'assigned') {
+			await ensureAppointmentForReferral(updatedReferral, auth.userId || undefined);
 		}
 
 		if (previousStatus !== updatedReferral.referralStatus) {

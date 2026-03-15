@@ -60,7 +60,7 @@ export const myReferralsQuerySchema = z.object({
   dateFrom:    optionalDateSchema,
   dateTo:      optionalDateSchema,
   page:        z.coerce.number().int().min(1).default(1),
-  limit:       z.coerce.number().int().min(1).max(20).default(20),
+  limit:       z.coerce.number().int().min(1).max(100).default(20),
 });
 export const updateReferralStatusBodySchema = z.object({
   referralStatus: referralStatusSchema,
