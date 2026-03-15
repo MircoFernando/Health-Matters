@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bell, CheckCircle2, ClipboardList, Loader2, Send, Users, XCircle } from "lucide-react";
+import { AlertCircle, Bell, CheckCircle2, ClipboardList, Loader2, RefreshCw, Send, Users, XCircle } from "lucide-react";
 import {
   useCancelReferralByIdMutation,
   useCreateReferralMutation,
@@ -25,27 +25,6 @@ const STATUS_CONFIG = {
   accepted: { label: "Accepted", style: "bg-blue-100 text-blue-700" },
   rejected: { label: "Rejected", style: "bg-red-100 text-red-700" },
 };
-
-const DUMMY_NOTIFICATIONS = [
-  {
-    _id: "note-demo-1",
-    title: "Referral Assigned",
-    message: "Referral #DEMO01 has been assigned.",
-    relatedEntityType: "referral",
-    relatedEntityId: "demo-1",
-    channels: { inApp: { read: false } },
-    createdAt: "2026-03-02T10:00:00.000Z",
-  },
-  {
-    _id: "note-demo-2",
-    title: "Referral Completed",
-    message: "Referral #DEMO03 has been completed.",
-    relatedEntityType: "referral",
-    relatedEntityId: "demo-3",
-    channels: { inApp: { read: true } },
-    createdAt: "2026-02-18T10:00:00.000Z",
-  },
-];
 
 const FALLBACK_TEAM = [
   { clerkUserId: "employee-demo-1", firstName: "Alex", lastName: "Shaw", department: "Operations" },
@@ -74,27 +53,97 @@ const getReferralsArray = (payload) => {
 };
 
 export const ManagerOverview = () => {
-  const { data: myReferralsResponse, isLoading: referralsLoading } = useGetMyReferralsQuery({ limit: 20 });
-  const { data: notificationsResponse, isLoading: notificationsLoading } = useGetNotificationsQuery({ limit: 8 });
+  const {
+    data: myReferralsResponse,
+    isLoading: referralsLoading,
+    isFetching: referralsFetching,
+    isError: referralsError,
+    refetch: refetchReferrals,
+  } = useGetMyReferralsQuery(
+    { limit: 50 },
+    {
+      pollingInterval: 10000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    }
+  );
+
+  const {
+    data: notificationsResponse,
+    isLoading: notificationsLoading,
+    isFetching: notificationsFetching,
+    isError: notificationsError,
+    refetch: refetchNotifications,
+  } = useGetNotificationsQuery(
+    { limit: 8 },
+    {
+      pollingInterval: 10000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    }
+  );
+
+  const {
+    data: employees = [],
+    isLoading: employeesLoading,
+    isFetching: employeesFetching,
+    isError: employeesError,
+    refetch: refetchEmployees,
+  } = useGetUsersQuery(
+    { role: "employee", isActive: true },
+    {
+      pollingInterval: 30000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    }
+  );
+
+  const {
+    data: practitioners = [],
+    isLoading: practitionersLoading,
+    isFetching: practitionersFetching,
+    isError: practitionersError,
+    refetch: refetchPractitioners,
+  } = useGetUsersQuery(
+    { role: "practitioner", isActive: true },
+    {
+      pollingInterval: 30000,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+    }
+  );
+
   const [markRead] = useMarkNotificationReadMutation();
 
   const referrals = getReferralsArray(myReferralsResponse);
   const notifications = Array.isArray(notificationsResponse) ? notificationsResponse : [];
-
-  const safeNotifications = notifications.length > 0 ? notifications : DUMMY_NOTIFICATIONS;
+  const teamCount = employees.length + practitioners.length;
+  const unreadNotifications = notifications.filter((note) => !note?.channels?.inApp?.read).length;
+  const isRefreshing =
+    referralsFetching ||
+    notificationsFetching ||
+    employeesFetching ||
+    practitionersFetching;
 
   const summary = useMemo(() => {
     const active = referrals.filter((r) => ["pending", "assigned", "in_progress", "accepted"].includes(r.referralStatus)).length;
     const completed = referrals.filter((r) => r.referralStatus === "completed").length;
-    const cancelled = referrals.filter((r) => r.referralStatus === "cancelled").length;
 
     return {
       total: referrals.length,
       active,
       completed,
-      cancelled,
     };
   }, [referrals]);
+
+  const refreshAll = async () => {
+    await Promise.all([
+      refetchReferrals(),
+      refetchNotifications(),
+      refetchEmployees(),
+      refetchPractitioners(),
+    ]);
+  };
 
   const openNotificationReferral = async (notification) => {
     if (!notification?.relatedEntityId) return;
@@ -117,23 +166,56 @@ export const ManagerOverview = () => {
         <p className="mt-1 text-sm text-slate-500">Track referral progress and notifications for your team.</p>
       </div>
 
+      {(referralsError || notificationsError || employeesError || practitionersError) && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Some overview data could not be loaded. Showing available live values.
+            </div>
+            <button
+              type="button"
+              onClick={refreshAll}
+              className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Retry
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-slate-500">Total Referrals</p>
-          <p className="mt-2 text-3xl font-bold text-slate-800">{summary.total}</p>
+          <p className="mt-2 text-3xl font-bold text-slate-800">{referralsLoading ? "..." : summary.total}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-slate-500">Active</p>
-          <p className="mt-2 text-3xl font-bold text-sky-700">{summary.active}</p>
+          <p className="mt-2 text-3xl font-bold text-sky-700">{referralsLoading ? "..." : summary.active}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-slate-500">Completed</p>
-          <p className="mt-2 text-3xl font-bold text-emerald-700">{summary.completed}</p>
+          <p className="mt-2 text-3xl font-bold text-emerald-700">{referralsLoading ? "..." : summary.completed}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm text-slate-500">Cancelled</p>
-          <p className="mt-2 text-3xl font-bold text-rose-700">{summary.cancelled}</p>
+          <p className="text-sm text-slate-500">Team Members / Unread</p>
+          <p className="mt-2 text-3xl font-bold text-violet-700">
+            {(employeesLoading || practitionersLoading) ? "..." : teamCount}
+            <span className="ml-2 text-lg font-semibold text-amber-700">/ {notificationsLoading ? "..." : unreadNotifications}</span>
+          </p>
         </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={refreshAll}
+          disabled={isRefreshing}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+          {isRefreshing ? "Refreshing..." : "Refresh overview"}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.45fr_1fr]">
@@ -171,7 +253,7 @@ export const ManagerOverview = () => {
               </tbody>
             </table>
           </div>
-          {(referralsLoading || notificationsLoading) && (
+          {(referralsLoading || notificationsLoading || referralsFetching || notificationsFetching) && (
             <div className="flex items-center gap-2 border-t border-slate-100 px-4 py-3 text-sm text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin" /> Loading live dashboard data...
             </div>
@@ -184,11 +266,11 @@ export const ManagerOverview = () => {
             <h2 className="text-base font-semibold text-slate-800">Status Notifications</h2>
           </div>
           <div className="max-h-84 overflow-auto px-4 py-3">
-            {safeNotifications.length === 0 ? (
+            {notifications.length === 0 ? (
               <p className="text-sm text-slate-500">No notifications yet.</p>
             ) : (
               <div className="space-y-3">
-                {safeNotifications.map((note) => {
+                {notifications.map((note) => {
                   const unread = !note?.channels?.inApp?.read;
                   return (
                     <button
