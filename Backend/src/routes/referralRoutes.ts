@@ -6,6 +6,7 @@ import {
   deleteMySubmittedReferralById,
   deleteReferralByPatientId,
   getAllReferrals,
+  getAvailableReferralsForPractitioner,
   getMyPatientReferrals,
   getReferralById,
   getMySubmittedReferrals,
@@ -35,6 +36,9 @@ ReferralRouter.get('/my-patient-referrals', getMyPatientReferrals);
 
 // GET /api/referrals/patient/:patientId
 ReferralRouter.get('/patient/:patientId', getReferralsByPatientId);
+
+// GET /api/referrals/practitioner/:practitionerId
+ReferralRouter.get('/practitioner/available', getAvailableReferralsForPractitioner);
 
 // GET /api/referrals/practitioner/:practitionerId
 ReferralRouter.get('/practitioner/:practitionerId', getReferralsByPractitionerId);

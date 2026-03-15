@@ -28,6 +28,8 @@ const formatValidationErrors = (error: ZodError) =>
 const normalizeRole = (value: unknown) =>
 	typeof value === 'string' ? value.trim().toLowerCase() : undefined;
 
+const USER_DIRECTORY_ROLES = ['admin', 'manager', 'employee', 'practitioner'];
+
 const requireManagerOrAdmin = async (req: Request) => {
 	const auth = getAuth(req);
 	if (!auth.userId) {
@@ -543,6 +545,34 @@ export const assignUserManagerByAdmin = async (req: Request, res: Response, next
 		}
 
 		res.status(200).json(updatedUser);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const getUserDirectory = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const auth = getAuth(req);
+		if (!auth.userId) {
+			throw new UnauthorizedError('Authentication required');
+		}
+
+		const requestedRole = normalizeRole(req.query.role);
+		if (requestedRole && !USER_DIRECTORY_ROLES.includes(requestedRole)) {
+			throw new ValidationError('Invalid role filter');
+		}
+
+		const filter: Record<string, unknown> = { isActive: true };
+		if (requestedRole) {
+			filter.role = requestedRole;
+		}
+
+		const users = await User.find(filter)
+			.select('clerkUserId firstName lastName email role department isActive')
+			.sort({ firstName: 1, lastName: 1 })
+			.lean();
+
+		res.status(200).json(users);
 	} catch (error) {
 		next(error);
 	}

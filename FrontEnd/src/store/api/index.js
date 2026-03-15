@@ -2,6 +2,7 @@ export { baseApi } from './baseApi';
 
 export {
   useGetUsersQuery,
+  useGetUserDirectoryQuery,
   useGetMeQuery,
   useUpdateMeMutation,
   useCreateUserMutation,
@@ -18,6 +19,7 @@ export {
   useGetMyPatientReferralsQuery,
   useGetReferralsByPatientIdQuery,
   useGetReferralsByPractitionerIdQuery,
+  useGetAvailableReferralsForPractitionerQuery,
   useGetReferralByIdQuery,
   useCreateReferralMutation,
   useUpdateReferralsByPatientIdMutation,

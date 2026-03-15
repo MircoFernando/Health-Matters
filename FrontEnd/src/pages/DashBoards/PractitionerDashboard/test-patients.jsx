@@ -1,68 +1,88 @@
-import { useState } from "react";
-
-/*
- Team J - Patient search, patient detail modal, and patient statistics cards (TMJ-005, TMJ-006, TMJ-007) . Done by Senithi, Yahanima, Dulmin, Akith, and Irindu
-*/
+import { useMemo, useState } from "react";
+import { useUser } from "@clerk/clerk-react";
+import { Loader2 } from "lucide-react";
+import { useGetAppointmentsByPractitionerIdQuery } from "../../../store/api";
 
 export const PractitionerTestPatients = () => {
-
+  const { user } = useUser();
   const [search, setSearch] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
 
-  const patients = [
-    {
-      id: "P001",
-      name: "John Smith",
-      age: 35,
-      condition: "Lower Back Pain",
-      lastVisit: "24 Feb 2026",
-      status: "Active",
-      phone: "+94 77 XXXX XXXX",
-      email: "john@email.com",
-      history: "Chronic back pain",
-      appointment: "20 Feb 2026",
-      notes: "Physiotherapy recommended"
-    },
-    {
-      id: "P002",
-      name: "Sarah Lee",
-      age: 29,
-      condition: "Diabetes",
-      lastVisit: "20 Feb 2026",
-      status: "Inactive",
-      phone: "+94 77 XXXX XXXX",
-      email: "sarah@email.com",
-      history: "Type 2 diabetes",
-      appointment: "18 Feb 2026",
-      notes: "Diet plan recommended"
-    }
-  ];
+  const {
+    data: appointments = [],
+    isLoading,
+    isError,
+  } = useGetAppointmentsByPractitionerIdQuery(user?.id, { skip: !user?.id });
 
-  const filteredPatients = patients.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+  const patients = useMemo(() => {
+    const grouped = new Map();
+
+    appointments.forEach((appointment) => {
+      const patient = appointment?.patient || {};
+      const clerkUserId = appointment?.patientClerkUserId || patient?.clerkUserId;
+      if (!clerkUserId) {
+        return;
+      }
+
+      const fullName = patient?.fullName || `${patient?.firstName || ""} ${patient?.lastName || ""}`.trim() || "Unknown";
+
+      if (!grouped.has(clerkUserId)) {
+        grouped.set(clerkUserId, {
+          id: clerkUserId,
+          name: fullName,
+          email: patient?.email || "",
+          phone: patient?.phone || "",
+          department: patient?.department || "",
+          totalAppointments: 0,
+          latestAppointmentDate: null,
+          latestServiceType: "",
+          latestReferralReason: "",
+          latestStatus: "Active",
+        });
+      }
+
+      const current = grouped.get(clerkUserId);
+      current.totalAppointments += 1;
+
+      const scheduledDate = appointment?.scheduledDate ? new Date(appointment.scheduledDate) : null;
+      if (scheduledDate && (!current.latestAppointmentDate || scheduledDate > current.latestAppointmentDate)) {
+        current.latestAppointmentDate = scheduledDate;
+        current.latestServiceType = appointment?.serviceType || "-";
+        current.latestReferralReason = appointment?.referralReason || "-";
+        current.latestStatus = appointment?.status === "cancelled" ? "Inactive" : "Active";
+      }
+    });
+
+    return Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [appointments]);
+
+  const filteredPatients = patients.filter((patient) =>
+    [patient.name, patient.id, patient.email, patient.department]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.toLowerCase())
   );
 
   const totalPatients = patients.length;
-  const activePatients = patients.filter((patient) => patient.status === "Active").length;
+  const activePatients = patients.filter((patient) => patient.latestStatus === "Active").length;
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const newPatients = patients.filter((patient) => {
-    const parsed = new Date(patient.lastVisit);
-    return !Number.isNaN(parsed.getTime()) && parsed >= thirtyDaysAgo;
-  }).length;
+  const newPatients = patients.filter(
+    (patient) => patient.latestAppointmentDate && patient.latestAppointmentDate >= thirtyDaysAgo
+  ).length;
 
   const handleReport = (patient) => {
     const reportText = [
       "Health Matters Patient Report",
       `Patient ID: ${patient.id}`,
       `Patient Name: ${patient.name}`,
-      `Age: ${patient.age}`,
-      `Condition: ${patient.condition}`,
-      `Status: ${patient.status}`,
-      `Last Visit: ${patient.lastVisit}`,
-      `Medical History: ${patient.history}`,
-      `Appointment: ${patient.appointment}`,
-      `Treatment Notes: ${patient.notes}`,
+      `Email: ${patient.email || "-"}`,
+      `Phone: ${patient.phone || "-"}`,
+      `Department: ${patient.department || "-"}`,
+      `Latest Service: ${patient.latestServiceType || "-"}`,
+      `Latest Referral Reason: ${patient.latestReferralReason || "-"}`,
+      `Appointments Count: ${patient.totalAppointments}`,
+      `Latest Appointment: ${patient.latestAppointmentDate ? patient.latestAppointmentDate.toLocaleString() : "-"}`,
     ].join("\n");
 
     const blob = new Blob([reportText], { type: "text/plain;charset=utf-8" });
@@ -76,19 +96,27 @@ export const PractitionerTestPatients = () => {
     URL.revokeObjectURL(url);
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-8 text-sm text-slate-600">
+        <Loader2 className="mr-2 inline-block h-4 w-4 animate-spin" /> Loading patients...
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-8 text-sm text-red-600">
+        Unable to load practitioner patients.
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
-
-      {/* Welcome */}
-      <div className="text-xl font-semibold mb-6">
-        Welcome, Dr. Smith
-      </div>
-
-      {/* Patient Statistics */}
       <h2 className="text-2xl font-bold mb-4">Patient Statistics</h2>
 
       <div className="grid grid-cols-3 gap-4 mb-8">
-
         <div className="bg-white p-4 shadow rounded">
           <p className="text-gray-500 text-sm">Total Patients</p>
           <p className="text-2xl font-bold">{totalPatients}</p>
@@ -103,31 +131,27 @@ export const PractitionerTestPatients = () => {
           <p className="text-gray-500 text-sm">New Patients</p>
           <p className="text-2xl font-bold">{newPatients}</p>
         </div>
-
       </div>
 
-      {/* Patient List */}
       <h2 className="text-2xl font-bold mb-4">Patient List</h2>
 
       <input
         type="text"
         placeholder="Search patients..."
-        className="border p-2 rounded w-60 mb-6"
+        className="border p-2 rounded w-80 mb-6"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(event) => setSearch(event.target.value)}
       />
 
-      {/* Table */}
       <div className="bg-white shadow rounded overflow-x-auto">
-
         <table className="w-full text-left">
-
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3">Patient ID</th>
               <th className="p-3">Patient Name</th>
-              <th className="p-3">Age</th>
-              <th className="p-3">Condition</th>
+              <th className="p-3">Email</th>
+              <th className="p-3">Phone</th>
+              <th className="p-3">Last Service</th>
               <th className="p-3">Last Visit</th>
               <th className="p-3">Status</th>
               <th className="p-3">Actions</th>
@@ -135,112 +159,72 @@ export const PractitionerTestPatients = () => {
           </thead>
 
           <tbody>
-            {filteredPatients.map((p) => (
-              <tr key={p.id} className="border-t">
-
-                <td className="p-3">{p.id}</td>
-                <td className="p-3">{p.name}</td>
-                <td className="p-3">{p.age}</td>
-                <td className="p-3">{p.condition}</td>
-                <td className="p-3">{p.lastVisit}</td>
-                <td className="p-3">{p.status}</td>
-
+            {filteredPatients.map((patient) => (
+              <tr key={patient.id} className="border-t">
+                <td className="p-3 font-mono text-xs">{patient.id}</td>
+                <td className="p-3">{patient.name}</td>
+                <td className="p-3">{patient.email || "-"}</td>
+                <td className="p-3">{patient.phone || "-"}</td>
+                <td className="p-3">{patient.latestServiceType || "-"}</td>
+                <td className="p-3">{patient.latestAppointmentDate ? patient.latestAppointmentDate.toLocaleDateString() : "-"}</td>
+                <td className="p-3">{patient.latestStatus}</td>
                 <td className="p-3 space-x-2">
-
                   <button
                     className="bg-blue-500 text-white px-3 py-1 rounded"
-                    onClick={() => setSelectedPatient(p)}
+                    onClick={() => setSelectedPatient(patient)}
                   >
                     View
                   </button>
 
                   <button
                     className="bg-green-500 text-white px-3 py-1 rounded"
-                    onClick={() => handleReport(p)}
+                    onClick={() => handleReport(patient)}
                   >
                     Report
                   </button>
-
                 </td>
-
               </tr>
             ))}
+            {filteredPatients.length === 0 && (
+              <tr>
+                <td className="p-6 text-center text-sm text-gray-500" colSpan={8}>
+                  No patients found for this practitioner.
+                </td>
+              </tr>
+            )}
           </tbody>
-
         </table>
-
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center gap-4 mt-6">
-        <button className="px-3 py-1 border rounded">Previous</button>
-        <button className="px-3 py-1 border rounded bg-blue-500 text-white">1</button>
-        <button className="px-3 py-1 border rounded">2</button>
-        <button className="px-3 py-1 border rounded">3</button>
-        <button className="px-3 py-1 border rounded">Next</button>
-      </div>
-
-      {/* Modal */}
       {selectedPatient && (
-
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-
           <div className="bg-white p-6 rounded-lg w-125 shadow-lg">
-
             <div className="flex justify-between items-center mb-4">
-
               <h2 className="text-xl font-bold">Patient Details</h2>
-
-              <button
-                className="text-xl"
-                onClick={() => setSelectedPatient(null)}
-              >
-                ✕
+              <button className="text-xl" onClick={() => setSelectedPatient(null)}>
+                x
               </button>
-
             </div>
 
             <div className="space-y-1 text-gray-700">
               <p><b>Name:</b> {selectedPatient.name}</p>
-              <p><b>Age:</b> {selectedPatient.age}</p>
-              <p><b>Condition:</b> {selectedPatient.condition}</p>
-              <p><b>Last Visit:</b> {selectedPatient.lastVisit}</p>
-              <p><b>Phone:</b> {selectedPatient.phone}</p>
-              <p><b>Email:</b> {selectedPatient.email}</p>
+              <p><b>Patient ID:</b> {selectedPatient.id}</p>
+              <p><b>Email:</b> {selectedPatient.email || "-"}</p>
+              <p><b>Phone:</b> {selectedPatient.phone || "-"}</p>
+              <p><b>Department:</b> {selectedPatient.department || "-"}</p>
+              <p><b>Appointments Count:</b> {selectedPatient.totalAppointments}</p>
+              <p><b>Last Service:</b> {selectedPatient.latestServiceType || "-"}</p>
+              <p><b>Last Visit:</b> {selectedPatient.latestAppointmentDate ? selectedPatient.latestAppointmentDate.toLocaleString() : "-"}</p>
             </div>
 
-            <hr className="my-4" />
-
-            <div className="mb-3">
-              <p className="font-semibold">Medical History</p>
-              <p className="text-gray-600">{selectedPatient.history}</p>
-            </div>
-
-            <div className="mb-3">
-              <p className="font-semibold">Appointments</p>
-              <p className="text-gray-600">{selectedPatient.appointment}</p>
-            </div>
-
-            <div className="mb-4">
-              <p className="font-semibold">Treatment Notes</p>
-              <p className="text-gray-600">{selectedPatient.notes}</p>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                className="border px-4 py-2 rounded"
-                onClick={() => setSelectedPatient(null)}
-              >
+            <div className="flex justify-end mt-4">
+              <button className="border px-4 py-2 rounded" onClick={() => setSelectedPatient(null)}>
                 Close
               </button>
             </div>
-
           </div>
-
         </div>
-
       )}
-
     </div>
   );
 };

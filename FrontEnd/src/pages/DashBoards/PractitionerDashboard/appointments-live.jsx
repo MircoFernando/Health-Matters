@@ -28,11 +28,15 @@ export const PractitionerAppointmentsLive = () => {
     data: appointments = [],
     isLoading,
     isError,
-  } = useGetAppointmentsByPractitionerIdQuery(user?.id, { skip: !user?.id });
+  } = useGetAppointmentsByPractitionerIdQuery(user?.id, {
+    skip: !user?.id,
+    refetchOnMountOrArgChange: true,
+    pollingInterval: 10000,
+  });
   const [respondToAppointment, { isLoading: isResponding }] = useRespondToAppointmentMutation();
   const [cancelAppointment, { isLoading: isCancelling }] = useCancelAppointmentMutation();
 
-  const assignedAppointments = appointments.filter((appointment) => appointment.status === 'assigned');
+  const assignedAppointments = appointments.filter((appointment) => ['assigned', 'scheduled'].includes(appointment.status));
   const confirmedAppointments = appointments.filter((appointment) => appointment.status === 'confirmed');
   const cancelledAppointments = appointments.filter((appointment) => appointment.status === 'cancelled');
 

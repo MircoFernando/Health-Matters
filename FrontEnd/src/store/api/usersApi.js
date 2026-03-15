@@ -9,6 +9,13 @@ export const usersApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Users'],
     }),
+    getUserDirectory: builder.query({
+      query: (params) => ({
+        url: '/users/directory',
+        params,
+      }),
+      providesTags: ['Users'],
+    }),
     getMe: builder.query({
       query: () => '/users/me',
       providesTags: ['Users'],
@@ -73,6 +80,7 @@ export const usersApi = baseApi.injectEndpoints({
 
 export const {
   useGetUsersQuery,
+  useGetUserDirectoryQuery,
   useGetMeQuery,
   useUpdateMeMutation,
   useCreateUserMutation,

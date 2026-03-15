@@ -35,6 +35,10 @@ export const referralsApi = baseApi.injectEndpoints({
       query: (practitionerId) => `/referrals/practitioner/${practitionerId}`,
       providesTags: ['Referrals'],
     }),
+    getAvailableReferralsForPractitioner: builder.query({
+      query: () => '/referrals/practitioner/available',
+      providesTags: ['Referrals'],
+    }),
 
     // GET /api/referrals/:referralId
     getReferralById: builder.query({
@@ -67,7 +71,7 @@ export const referralsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body: { practitionerClerkUserId },
       }),
-      invalidatesTags: ['Referrals'],
+      invalidatesTags: ['Referrals', 'Appointments'],
     }),
     deleteReferralsByPatientId: builder.mutation({
       query: (patientId) => ({
@@ -89,7 +93,7 @@ export const referralsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body: { referralStatus },
       }),
-      invalidatesTags: ['Referrals'],
+      invalidatesTags: ['Referrals', 'Appointments'],
     }),
     cancelReferralById: builder.mutation({
       query: ({ referralId, reason }) => ({
@@ -109,6 +113,7 @@ export const {
   useGetMyPatientReferralsQuery,
   useGetReferralsByPatientIdQuery,
   useGetReferralsByPractitionerIdQuery,
+  useGetAvailableReferralsForPractitionerQuery,
   useGetReferralByIdQuery,
   useCreateReferralMutation,
   useUpdateReferralsByPatientIdMutation,

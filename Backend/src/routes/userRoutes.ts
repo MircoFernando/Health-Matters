@@ -4,6 +4,7 @@ import {
 	createUserByAdmin,
 	deactivateUserByAdmin,
 	deleteUserByAdmin,
+	getUserDirectory,
 	getAllUsers,
 	getUserByClerkId,
 	getUserById,
@@ -19,6 +20,9 @@ UserRouter.use(requireClerkAuth);
 
 // GET /api/users - Get all users
 UserRouter.get('/', getAllUsers);
+
+// GET /api/users/directory - Get active user directory for authenticated users
+UserRouter.get('/directory', getUserDirectory);
 
 // GET /api/users/me - Get authenticated user by Clerk ID from token
 UserRouter.get('/me', getUserByClerkId);
