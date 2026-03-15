@@ -1,0 +1,156 @@
+UNIVERSITY HEALTH CRM  ·  OCCUPATIONAL HEALTH SYSTEM,,,,,
+Product Backlog — All Teams (A–J)  ,,,,,
+Team A (Manager),,,,,
+ID,User Story,Acceptance Criteria (Key Features Implemented),Team Member/Members who developed this feature,Status,Notes
+TMA-001,"As a manager, I want to submit a referral on behalf of a team member so that they can access the right occupational health service.","Can select an employee from my team list
+Can choose a service type",Mahdi ,Done,
+TMA-002,"As a manager, I want to add a reason and supporting notes when submitting a referral so that practitioners have clinical context.","Free-text reason field (required, max 1000 chars)
+Visible to Practitioners and managers ",Mahdi ,Done,—
+TMA-003,"As a manager, I want to view all referrals I have submitted so that I can track their progress.","View with: REF ID, employee name, service, date, status and department if applicable
+Filterable by name, email and department
+Searchable by employee name or referral ID
+",Mahdi ,Done,—
+TMA-004,"As a manager, I want to view the details of a specific referral of my team member so that I can see its current status and any updates.","Shows status, assigned practitioner, submission date, notes visible to manager
+Read-only view (no edit post-submission), should have a view health data button that fulfills TMA-003",Mahdi ,Done,—
+TMA-005,"As a manager, i want to be able to interact with the backend endpoints and ensure I have up to date data on the referrals of my team","Configure routes, ensure backend is working properly, My referral history dashboard provided for quick reference on submitted referrals and their information, any new referrals should show in the team members field in TEAM section",Savindu,Done,—
+TMA-006,"As a manager, I want to have a user friendly and quick referral process that is intuitive and responsive","Basic UI need to be devloped with segmented sidebar icons for access to different pages and sections, My teams section needs to update with any new team members and their data, referral submission form should be accessible immediately on the team member's field, remove isolated referral field for duplication and ease of access",Savindu & Mahdi,Done,—
+Team B (Employee),,,,,
+ID,User Story,Acceptance Criteria (Key Features Implemented),Team Member/Members who developed this feature,Status,Notes
+TMB-001,"As a manager, I want to receive outcome reports for referrals I submitted where consent is given so that I can support the employee's return to work.","Report only visible if share_with_manager = true on outcome_reports
+Manager notified when the report is available
+Report viewable in referral detail screen
+Cannot be downloaded or printed by the manager - view only",Tevin and Ovin - Frontend and Backend,Not Done,—
+TMB-002,"As a manager, I want to see workplace adjustment recommendations from outcome reports so that I can action them promptly.","Recommendations section highlighted in report view
+Manager can mark recommendations as actioned
+Actioned status logged in audit_log
+Practitioner notified when recommendations actioned",Dulina and Esara - Frontend,Not Done,—
+TMB-003,"As a manager, I want to receive an alert when an SLA deadline is approaching for one of my referrals so that I can escalate if needed.","Warning notification 48hrs before SLA breach
+Critical notification on day of breach
+Notification links to referral detail
+Admin also notified simultaneously",Esara and Irusha - Frontend,in progress,—
+TMB-004,"As a manager, I want to configure my notification preferences so that I only receive alerts that are relevant to me.","Toggle: in-app, email, SMS per notification type
+Preferences saved per user
+Default: in-app on for all; email off
+Changes take effect immediately",Dulina and Irusha - Frontend,Not Done,—
+TMB-005,"As a manager, I want to update my personal details so that my contact information is always accurate.","Editable fields: name, phone, job title, department
+Email change requires re-verification
+Changes logged in audit_log
+Success toast confirmation shown",Tevin and Ovin - Frontend and Backend,Done,—
+TMB-006,"As a manager, I want to view health guidance documents and advice sheets so that I can proactively support my team.","Searchable document library (public docs only)
+Filterable by topic / service type
+Documents open in-browser (PDF viewer)
+Download allowed for advice sheets",Tevin and Ovin - Frontend and Backend,Done,—
+,,,,,
+Team C (Employee),,,,,
+ID,,,,Status,Notes
+TMC-001,"As a service user, I want to submit a self-referral, so that I can access services independently.","The Submit Referral feature provides a validated form including a read-only UserID, mandatory Service Type (dropdown) and Reason, and optional Notes. It employs strict validation to disable the ""Submit"" button until required fields are complete, accompanied by a GDPR compliance disclaimer.","Frontend - Vinuki & Senuthi
+Backend - Tharusha",Done,—
+TMC-002,"As a service user, I want to see my referral history, so that I can track my progress.","The Referral History feature displays a tracking table for Referral ID, Submission Date, Service Type, and Status. It includes a ""View Details"" pop-up message that allows users to instantly review their full submission.","Frontend - Vinuki & Senuthi
+Backend - Tharusha",Done,—
+TMC-003,"As a service user, I want to see my past and upcoming appointments, so that I can manage my schedule.","The Patient History Timeline displays a structured table of past and upcoming appointments, detailing the Date, Appointment Type, and Doctor Name. It provides users with a clear, chronological overview of their medical journey and scheduled care.","Frontend - Vinuki & Senuthi
+Backend - Tharusha",Done,—
+TMC-004,"As a service user, I want to toggle between dark & light mode, so that I can reduce eye strain depending on room lighting.","The Display Mode feature provides a Light/Dark theme toggle, allowing users to customize their interface. It defaults to Light Theme..","Frontend - Vinuki & Senuthi
+",To Be Done,—
+TMC-005,"As a service user, I want to view a transparent list of service prices and durations, so that I can make an informed decision before submitting a referral.","The Available Services feature displays a mock data table outlining Clinical Offerings, Estimated Durations, and Pricing. It serves as a pre-submission reference before selecting to submit a referral.","Frontend - Vinuki & Senuthi
+",Done,—
+TMC-006,"As a service user, I want to see a high-level count of my total referral activity, so that I can quickly understand the volume of my engagement with clinical services.",The Total Referrals feature displays a summary of the user's total submitted referrals and those pending review.,"Frontend - Vinuki & Senuthi
+Backend: Tharusha",Done,—
+TMC-007,"As a service user, I want a dedicated indicator for ""Pending Referrals,"" so that I can immediately identify how many requests are still awaiting clinical or administrative review.",The Pending Referrals feature highlights the total number of submissions currently awaiting review.,"Frontend - Vinuki & Senuthi
+Backend: Tharusha",Done,—
+,,,,,
+Team D (Manager),,,,,
+ID,User Story,Acceptance Criteria (Key Features Implemented),Team Member/Members who developed this feature,Status,Notes
+TMD-001,"As a manager, I want to receive a notification when the status of my referral changes so that I am kept informed.","Notification triggered on: Assigned, In Progress, Completed, Cancelled
+In-app notification with deep link to referral
+Optional email notification (user preference)
+Notifications marked read on view",Ramiru,Done,—
+TMD-002,"As a manager, I want to cancel a referral I submitted (while pending) so that the queue is kept accurate.","Cancel only allowed while status = Pending
+Must provide cancellation reason (required)
+Employee notified of cancellation
+Admin notified; referral marked Cancelled in dashboard",Sajana,Done,—
+TMD-003,"As a manager, I want to see an aggregated health overview of my team so that I can identify trends and support wellbeing.","Shows anonymised aggregate stats: referrals by service type, avg resolution time
+No individual health data exposed
+Filterable by date range
+Data refreshed nightly",Omidu,Done,—
+TMD-004,"As a manager, I want to see SLA compliance stats for my team's referrals so that I can escalate breaches.","Shows: % referrals within SLA, # breached, avg days to assignment
+Red/amber/green RAG indicators
+Drilldown to list of SLA-breached referrals
+Export to CSV available",Sajana,Done,—
+TMD-005,"As a manager, I want an in-depth wellbeing analytics view so that I can spot department-level health patterns over time.","Trend charts for referral volume over 3/6/12 months
+Breakdown by service type (anonymised)
+Comparison to organisational average
+Printable/exportable report",Ramiru,Done,—
+TMD-006,,,,,—
+TMD-007,,,,,—
+,,,,,
+Team E (Employee),,,,,
+ID,User Story,Acceptance Criteria (Key Features Implemented),Team Member/Members who developed this feature,Status,Notes
+TME-001,"As a user, I want to receive notifications about appointments and outcomes, so that I stay informed. ","Employee receives in-app notification when a referral is submitted. Notification shows title, service type, reason and date. Notifications page polls every 10s for new items.",Abhiman (BackEnd) Methmi (FrontEnd),Done,—
+TME-002,"As a user, I want to update my personal details, so that my records are up to date. ","Employee can edit first name, last name, phone, department, date of birth, and address. Email is read-only (managed by Clerk). Changes persist to MongoDB via PUT /api/users/me. Success banner shown on save.",Praneepa (BackEnd) Methmi (FrontEnd),Done ,—
+TME-003,"As a user, I want to see my upcoming appointments and advice sheet activity on my dashboard, so that I can stay on top of my health schedule.",Dashboard displays an Upcoming Appointments stat card showing the count of future appointments and the number of days until the next one. Dashboard displays an Advice Sheets Accessed stat card showing the total medical record access count for the employee. Both cards pull live data from the backend APIs (GET /api/appointments/employee/:employeeId and GET /api/medical-records/access-count/:employeeId).,Methmi (FrontEnd and BackEnd),Done,—
+TME-004,"As a user, I want the dashboard to have proper colour contrast, 
+so that it is accessible and easy to read.","All text and UI elements meet WCAG AA contrast ratio standards (minimum 4.5:1 for normal text, 3:1 for large text). Dashboard remains readable for users with visual impairments.",Abhiman (frontEnd),To be done ,—
+TME-005,,,,,—
+TME-006,,,,,—
+,,,,,
+Team F (Admin & Sys Owner),,,,,
+ID,User Story,Acceptance Criteria (Key Features Implemented),Team Member/Members who developed this feature,Status,Notes
+TMF-001,"As an Admin, I want to log in and access the User Role Management Console so that I can manage user accounts securely.",The User Role Management Console allows administrators to authenticate and access a centralized dashboard where all system users can be managed. Access is restricted to Admin users only and is available through the main navigation menu.,Mirco (BackEnd) Danuja (FrontEnd),Done,—-
+TMF-002,"As an Admin, I want to view a list of all users filterable by role so that I can quickly locate specific accounts.","The User List feature displays all system users in a table showing name, email, role, and account status. It includes role-based filtering (Admin, Manager, Practitioner, Service User) to quickly locate accounts.",Isuru (BackEnd) Upeka (FrontEnd),Done,—
+TMF-003,"As an Admin, I want to create new user accounts so that new staff members can access the system.","The Create User feature provides a validated form for adding new users with name, email, and role selection. Duplicate emails are prevented and a confirmation message appears once the account is successfully saved to the database.",Mirco (BackEnd) Idusha (FrontEnd),Done,—
+TMF-004,"As an Admin, I want to edit user details so that staff information remains accurate.","The Create User feature provides a validated form for adding new users with name, email, and role selection. Duplicate emails are prevented and a confirmation message appears once the account is successfully saved to the database.",Mirco (BackEnd) Danuja (FrontEnd),Done,—
+TMF-005,"As an Admin, I want a centralized dashboard to view all incoming referrals so that I can manage referral intake efficiently.","The Referral Management Dashboard provides a central interface displaying all referrals with columns for Source, Date, Status, and Assigned Practitioner. It supports sorting and searching for efficient triage.",Danuja (BackEnd) Isuru (FrontEnd),Done,—
+TMF-006,"•	As a sys owner, I want the platform to be GDPR compliant and ISO 27001 certified, so that data is secure and regulatory standards are met.","The Application is fully developed to adhere to GDPR complaints by implementing middlewares, cors, zod validation, and clerk tokens",Mirco ,Done,
+,,,,,
+Team G (Practitioner),,,,,
+ID,User Story,Acceptance Criteria (Key Features Implemented),Team Member/Members who developed this feature,Status,Notes
+TMG-001,"As a practitioner, I want to access my appointement list, so that I can prepare for appointments effectively.","- Display a dashboard showing pending and confirmed appointements in a tabular format. 
+- Update the dashboard with the latest details from the database.","Charin, Helika & Vinuli",Done,—
+TMG-002,"As a practitioner, I want to refer users to other practitioners, so that they get right health support.","- Displays a form which lets the practitioner fill in and submit
+- Data is validated
+- The data is send to the database once a valid form is sumbitted",Vinuli,Done,—
+TMG-003,"As a practitioner, I want to be able to cancel appointments if I am not able to attend them.","- Display a message and remove the appointement from the appointment diary. 
+- Update the database.",Vinuli,Done,—
+TMG-004,"As a practitioner, I want to view statistics regarding my appointments so that I can track my performance.","- Displays multiple counters that update realtime showing Pending, Assigned to and Confirmed referrals.",Helika,Done,—
+TMG-005,As a practitioner I want to be able to view & manage all referrals through a single dashboard for ease of access.,"- Displays a table containing all referrals appointed to that practitioner
+- Able to search for referrals via the Referral ID, Patient ID or Service type.
+- Follows WCAG guidlines [2.4.6] showing clear headings and labels & [1.4.3] minimum 4.5:1 contrast ratio.","Charin, Helika & Vinuli",Done,—
+TMG-006,"As a practitioner, I want to be able to view my details in single page to ensure the details are shown are catered to me.",- Display practitioner details on the screen based on the signed in practitioner.,Helika,Done,—
+,,,,,
+Team H (Admin),,,,,
+ID,User Story,Acceptance Criteria (Key Features Implemented),Team Member/Members who developed this feature,Status,Notes
+TMH-001,"As an Admin, I want to view a list of all services with name, category, duration, and status so that I have a clear overview of the current service catalogue.","Table loads <2s; Columns: Service Name, Category, Duration, Status, Actions; Sortable; Search bar functional.",Piushan,Done,—
+TMH-002,"As an Admin, I want to create a new service with name, category, price, and duration so that new offerings are added to the platform.",Form validates required fields; Duplicate name rejected; Saved to DB; Confirmation shown; '+ Add Service' button accessible from header.,"Vishal
+",Done,—
+TMH-003,"As an Admin, I want to edit an existing service's details, pricing, and duration so that the service catalogue remains current and accurate.",All fields update on save; Audit trail logged; Changes reflected immediately in table.,Tenura,Done,—
+TMH-004,"As an Admin, I want to deactivate or archive a service so that discontinued offerings are no longer bookable.",Service status updates to Inactive; Inactive count updates in Service Status Overview; Confirmation dialog required.,Shamal,Done,—
+TMH-005,"As an Admin, I want to view a summary stats bar showing Total Services, Active Services, Average Duration, and Inactive Services",All four KPI cards render on dashboard load; Active % calculated correctly; Avg Duration shows average session length.,Usara,Done,—
+TMH-006,"As an Admin, I want to Categorise and tag services by specialty type for easier filtering and navigation",Tag taxonomy configurable; Services filterable by tag; Tags displayed in booking and dashboard views.,"Vishal
+",Partial,—
+,,,,,
+Team I (Employee),,,,,
+ID,,,,Status,Notes
+TMI-001,"As a service user, I want to access a Help & Advice page so that I can view guidance and information related to my referrals.","User can navigate to the Help & Advice page from the employee dashboard.
+System retrieves referrals associated with the logged-in user.
+Referral cards display service type, referral ID, submission date and referral status.
+Selecting a referral opens a details panel showing referral information.",Sasithi & Yovinma,Done,—
+TMI-002,"As a service user, I want to see a list of my referrals so that I can track the status of my care requests.","As a service user, I want to see a list of my referrals so that I can track the status of my care requests.",Sasithi & Yovinma,Done,—
+TMI-003,"As a service user, I want to see the status of my referrals so that I know whether they are pending, in progress, or completed.","Each referral displays a status badge showing Pending, In Progress, or Completed.
+Status badge colour changes depending on referral status.
+User can clearly identify the progress of their referral from the referral card.",Sasithi & Yovinma,Done,—
+TMI-004,"As a service user, I want to view the clinical summary provided by the practitioner so that I can understand the advice related to my referral.","When a referral status is Completed, a Clinical Summary option is available.
+User can click the Clinical Summary option to view the practitioner guidance.
+Clinical summary is displayed in the referral details panel.
+If no summary is available, a message indicating this is displayed.",Sasithi & Yovinma,Done,—
+TMI-005,"As a service user, I want to receive general wellbeing guidance while my referral is being processed so that I can manage my health while waiting for clinical review.","As a service user, I want to receive general wellbeing guidance while my referral is being processed so that I can manage my health while waiting for clinical review.",Sasithi & Yovinma,Done,—
+TMI-006,,,,,—
+,,,,,
+Team J (Practitioner),,,,,
+ID,,,,Status,Notes
+TMJ-001,"As a practitioner, I want to view recent patient reviews so that I can understand patient feedback about healthcare services.","Implemented review cards showing patient name, star rating, and review message. Reviews are displayed in a card layout on the Practitioner Reviews dashboard.",Yahanima & Senithi Front end,Done,—
+TMJ-002,"As a practitioner, I want to add a new review so that I can record patient feedback after treatment.","Created a review submission form including name input, review textarea, and rating selection. Users can submit reviews using the ""Submit Review"" button.",Irindu & Dulmin Front end,Done,—
+TMJ-003,"As a practitioner, I want to rate reviews using a star rating system so that feedback can be visually summarized.",Implemented a 5-star rating component where users can select ratings visually. Selected stars highlight based on rating value.,Akith & Yahanima Front end,Done,—
+TMJ-004,"As a practitioner, I want to view a list of patients so that I can manage patient records efficiently.","Created patient table displaying patient ID, name, age, condition, last visit date, and status. Table includes action buttons.",Akith & Irindu Front end and Backend ,In Progress,—
+TMJ-005,"As a practitioner, I want to search for patients so that I can quickly find specific patient records.",Implemented search functionality that filters patients by name dynamically. Search updates results instantly.,Senithi & Yahanima & Dulmin Frontend,Done ,—
+TMJ-006,"As a practitioner, I want to view patient details in a modal popup so that I can access detailed information without leaving the page.","Implemented modal popup displaying patient name, age, condition, phone, email, medical history, appointments, and treatment notes.",Akith & Irindu Back end ,Done,—
+TMJ-007,"As a practitioner, I want to view patient statistics so that I can monitor patient activity.","Implemented dashboard statistic cards showing total patients, active patients, and new patients.",Dulmin & Yahanima & Senithi Front end,Done,—
