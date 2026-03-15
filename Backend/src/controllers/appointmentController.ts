@@ -77,13 +77,38 @@ export const getAppointmentsByEmployeeId = async (
 
     const { employeeId } = req.params;
 
-    const appointments = await Appointment.find({
-      employeeId
-    })
-      .populate("practitionerId", "firstName lastName")
-      .sort({ scheduledDate: -1 });
+    const appointments = await Appointment.find({ employeeId })
+      .sort({ scheduledDate: -1 })
+      .lean();
 
-    res.status(200).json(appointments);
+    const practitionerClerkUserIds = [
+      ...new Set(appointments.map((appointment: any) => appointment.practitionerId).filter(Boolean)),
+    ];
+
+    const practitioners = await User.find({ clerkUserId: { $in: practitionerClerkUserIds } })
+      .select("clerkUserId firstName lastName")
+      .lean();
+
+    const practitionerMap = new Map(
+      practitioners.map((practitioner: any) => [practitioner.clerkUserId, practitioner])
+    );
+
+    const enrichedAppointments = appointments.map((appointment: any) => {
+      const practitioner = practitionerMap.get(appointment.practitionerId);
+
+      return {
+        ...appointment,
+        practitionerId: practitioner
+          ? {
+              clerkUserId: practitioner.clerkUserId,
+              firstName: practitioner.firstName || "",
+              lastName: practitioner.lastName || "",
+            }
+          : null,
+      };
+    });
+
+    res.status(200).json(enrichedAppointments);
 
   } catch (error) {
 
@@ -94,6 +119,53 @@ export const getAppointmentsByEmployeeId = async (
 
   }
 
+};
+
+export const getMyEmployeeAppointments = async (req: Request, res: Response) => {
+  try {
+    const auth = getAuth(req);
+    if (!auth.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const appointments = await Appointment.find({ employeeId: auth.userId })
+      .sort({ scheduledDate: -1 })
+      .lean();
+
+    const practitionerClerkUserIds = [
+      ...new Set(appointments.map((appointment: any) => appointment.practitionerId).filter(Boolean)),
+    ];
+
+    const practitioners = await User.find({ clerkUserId: { $in: practitionerClerkUserIds } })
+      .select("clerkUserId firstName lastName")
+      .lean();
+
+    const practitionerMap = new Map(
+      practitioners.map((practitioner: any) => [practitioner.clerkUserId, practitioner])
+    );
+
+    const enrichedAppointments = appointments.map((appointment: any) => {
+      const practitioner = practitionerMap.get(appointment.practitionerId);
+
+      return {
+        ...appointment,
+        practitionerId: practitioner
+          ? {
+              clerkUserId: practitioner.clerkUserId,
+              firstName: practitioner.firstName || "",
+              lastName: practitioner.lastName || "",
+            }
+          : null,
+      };
+    });
+
+    res.status(200).json(enrichedAppointments);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch appointments",
+      error,
+    });
+  }
 };
 
 export const getAppointmentsByPractitionerId = async (req: Request, res: Response) => {

@@ -2,6 +2,7 @@ import express from "express";
 import {
 	cancelAppointment,
 	getAppointmentsByEmployeeId,
+	getMyEmployeeAppointments,
 	getAppointmentsByPractitionerId,
 	getMyPractitionerAppointments,
 	respondToAppointment,
@@ -12,6 +13,7 @@ const router = express.Router();
 
 router.use(requireClerkAuth);
 
+router.get("/employee/me", getMyEmployeeAppointments);
 router.get("/employee/:employeeId", getAppointmentsByEmployeeId);
 router.get("/practitioner/me", getMyPractitionerAppointments);
 router.get("/practitioner/:practitionerId", getAppointmentsByPractitionerId);

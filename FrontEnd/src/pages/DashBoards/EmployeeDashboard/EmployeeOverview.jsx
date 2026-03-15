@@ -277,6 +277,8 @@ export const EmployeeOverview = () => {
     refetch: refetchAppointments,
   } = useGetAppointmentsByEmployeeIdQuery(patientId, {
     skip: !patientId,
+    refetchOnMountOrArgChange: true,
+    pollingInterval: 10000,
   });
 
   /* ── Derived metrics ── */

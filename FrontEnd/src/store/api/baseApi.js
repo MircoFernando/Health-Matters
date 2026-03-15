@@ -1,14 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
-const shouldUseRelativeApi =
-  typeof window !== 'undefined' &&
-  window.location.port === '3000' &&
-  typeof configuredBaseUrl === 'string' &&
-  configuredBaseUrl.includes('localhost:3000');
+const isDevelopment = import.meta.env.DEV;
 
+// In development, always use relative /api so Vite proxy handles backend routing.
 const baseUrl = (
-  shouldUseRelativeApi
+  isDevelopment
     ? '/api'
     : configuredBaseUrl && configuredBaseUrl.trim()
       ? configuredBaseUrl
