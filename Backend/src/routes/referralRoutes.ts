@@ -3,6 +3,7 @@ import {
   assignReferralById,
   cancelReferralByManager,
   createReferral,
+  deleteMySubmittedReferralById,
   deleteReferralByPatientId,
   getAllReferrals,
   getReferralById,
@@ -44,6 +45,9 @@ ReferralRouter.put('/patient/:patientId', updateReferralByPatientId);
 
 // DELETE /api/referrals/patient/:patientId
 ReferralRouter.delete('/patient/:patientId', deleteReferralByPatientId);
+
+// DELETE /api/referrals/:referralId - manager can delete own unprocessed referral
+ReferralRouter.delete('/:referralId', deleteMySubmittedReferralById);
 
 // PUT /api/referrals/:referralId/assign
 ReferralRouter.put('/:referralId/assign', assignReferralById);

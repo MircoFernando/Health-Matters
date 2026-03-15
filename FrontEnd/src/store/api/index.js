@@ -22,6 +22,7 @@ export {
   useUpdateReferralsByPatientIdMutation,
   useAssignReferralByIdMutation,
   useDeleteReferralsByPatientIdMutation,
+  useDeleteMyReferralByIdMutation,
   useUpdateReferralStatusMutation,
   useCancelReferralByIdMutation,
 } from './referralsApi';

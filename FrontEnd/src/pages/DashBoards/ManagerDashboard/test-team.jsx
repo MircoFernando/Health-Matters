@@ -389,6 +389,7 @@ export const ManagerTestTeam = () => {
   const [detailTarget, setDetailTarget]     = useState(null);
 
   const { data: employees = [], isLoading: empLoading, error: empError } = useGetUsersQuery({ role: "employee" });
+  const { data: practitioners = [], isLoading: pracLoading, error: pracError } = useGetUsersQuery({ role: "practitioner" });
   const { data: allReferrals = [], refetch } = useGetReferralsQuery();
 
   // Build a map: clerkUserId → referrals[]
@@ -430,7 +431,9 @@ export const ManagerTestTeam = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Team</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {empLoading ? "Loading…" : `${employees.length} employees · ${activeCount} with active referrals`}
+            {empLoading || pracLoading
+              ? "Loading…"
+              : `${employees.length} employees · ${practitioners.length} practitioners · ${activeCount} with active referrals`}
           </p>
         </div>
       </div>
@@ -451,6 +454,11 @@ export const ManagerTestTeam = () => {
       {empError && (
         <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
           <AlertCircle className="h-4 w-4 shrink-0" /> Failed to load team members.
+        </div>
+      )}
+      {pracError && (
+        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          <AlertCircle className="h-4 w-4 shrink-0" /> Failed to load practitioners.
         </div>
       )}
       {!empLoading && !empError && filtered.length === 0 && (
@@ -524,6 +532,38 @@ export const ManagerTestTeam = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {!pracLoading && !pracError && practitioners.length > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-base font-semibold text-slate-800">Practitioners</h2>
+          <p className="mt-1 text-xs text-slate-500">Available practitioners in your organisation.</p>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {practitioners.map((member) => {
+              const fullName = `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() || "Unknown";
+              const initials = [member.firstName?.[0], member.lastName?.[0]].filter(Boolean).join("").toUpperCase() || "?";
+
+              return (
+                <div key={member._id ?? member.clerkUserId} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-800 text-sm font-semibold text-white overflow-hidden">
+                      {member.profileImageUrl ? (
+                        <img src={member.profileImageUrl} alt={fullName} className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        initials
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-slate-800">{fullName}</p>
+                      <p className="truncate text-xs text-slate-500">{member.department || "Practitioner"}</p>
+                      {member.email ? <p className="mt-1 truncate text-xs text-slate-400">{member.email}</p> : null}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

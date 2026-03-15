@@ -80,7 +80,7 @@ export const ManagerTestInsights = () => {
   const [dateTo, setDateTo] = useState("");
   const [trendWindowMonths, setTrendWindowMonths] = useState(12);
 
-  const { data: myReferralsResponse, isFetching } = useGetMyReferralsQuery({ limit: 200 });
+  const { data: myReferralsResponse, isFetching } = useGetMyReferralsQuery({ limit: 100 });
   const liveReferrals = getReferralsArray(myReferralsResponse);
   const referrals = liveReferrals.length > 0 ? liveReferrals : DUMMY_INSIGHTS_REFERRALS;
 

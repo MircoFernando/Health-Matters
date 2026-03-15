@@ -3,6 +3,7 @@ import { Bell, CheckCircle2, ClipboardList, Loader2, Send, Users, XCircle } from
 import {
   useCancelReferralByIdMutation,
   useCreateReferralMutation,
+  useDeleteMyReferralByIdMutation,
   useGetMyReferralsQuery,
   useGetNotificationsQuery,
   useGetUsersQuery,
@@ -73,7 +74,7 @@ const getReferralsArray = (payload) => {
 };
 
 export const ManagerOverview = () => {
-  const { data: myReferralsResponse, isLoading: referralsLoading } = useGetMyReferralsQuery({ limit: 50 });
+  const { data: myReferralsResponse, isLoading: referralsLoading } = useGetMyReferralsQuery({ limit: 20 });
   const { data: notificationsResponse, isLoading: notificationsLoading } = useGetNotificationsQuery({ limit: 8 });
   const [markRead] = useMarkNotificationReadMutation();
 
@@ -274,8 +275,9 @@ export const ManagerReferralSubmission = () => {
 
   const [createReferral, { isLoading: submitting }] = useCreateReferralMutation();
   const [cancelReferralById, { isLoading: cancelling }] = useCancelReferralByIdMutation();
+  const [deleteMyReferralById, { isLoading: deleting }] = useDeleteMyReferralByIdMutation();
   const { data: users = [] } = useGetUsersQuery({ role: "employee" });
-  const { data: myReferralsResponse, refetch } = useGetMyReferralsQuery({ limit: 50 });
+  const { data: myReferralsResponse, refetch } = useGetMyReferralsQuery({ limit: 20 });
   const [markRead] = useMarkNotificationReadMutation();
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -337,6 +339,25 @@ export const ManagerReferralSubmission = () => {
       refetch();
     } catch (err) {
       setErrors({ server: err?.data?.message || "Unable to cancel referral." });
+    }
+  };
+
+  const handleDeleteReferral = async (referral) => {
+    const referralId = String(referral?._id || "");
+    if (!referralId) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete referral ${referralId.slice(-8).toUpperCase()}? This cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteMyReferralById(referralId).unwrap();
+      refetch();
+    } catch (err) {
+      setErrors({ server: err?.data?.message || "Unable to delete referral." });
     }
   };
 
@@ -442,6 +463,7 @@ export const ManagerReferralSubmission = () => {
               <tbody className="divide-y divide-slate-100">
                 {myReferrals.map((ref) => {
                   const isPending = ref.referralStatus === "pending";
+                  const canDelete = ["pending", "cancelled", "rejected"].includes(ref.referralStatus);
                   const isHighlighted = highlightedReferralId === String(ref._id);
 
                   return (
@@ -453,17 +475,28 @@ export const ManagerReferralSubmission = () => {
                       <td className="px-4 py-3 text-slate-700">{ref.serviceType || "-"}</td>
                       <td className="px-4 py-3"><StatusBadge status={ref.referralStatus} /></td>
                       <td className="px-4 py-3">
-                        {isPending ? (
-                          <button
-                            type="button"
-                            onClick={() => setCancelTarget(ref)}
-                            className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
-                          >
-                            Cancel
-                          </button>
-                        ) : (
-                          <span className="text-xs text-slate-400">Not available</span>
-                        )}
+                        <div className="flex flex-wrap gap-2">
+                          {isPending ? (
+                            <button
+                              type="button"
+                              onClick={() => setCancelTarget(ref)}
+                              className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+                            >
+                              Cancel
+                            </button>
+                          ) : null}
+                          {canDelete ? (
+                            <button
+                              type="button"
+                              disabled={deleting}
+                              onClick={() => handleDeleteReferral(ref)}
+                              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+                            >
+                              Delete
+                            </button>
+                          ) : null}
+                          {!isPending && !canDelete ? <span className="text-xs text-slate-400">Not available</span> : null}
+                        </div>
                       </td>
                     </tr>
                   );

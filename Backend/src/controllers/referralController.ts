@@ -486,6 +486,45 @@ export const cancelReferralByManager = async (req: Request, res: Response, next:
 	}
 };
 
+export const deleteMySubmittedReferralById = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const parsedParams = referralIdParamsSchema.safeParse(req.params);
+		const auth = getAuth(req);
+
+		if (!auth.userId) {
+			throw new UnauthorizedError('Authentication required');
+		}
+
+		if (!parsedParams.success) {
+			throw new ValidationError(JSON.stringify(formatValidationErrors(parsedParams.error)));
+		}
+
+		const { referralId } = parsedParams.data;
+
+		const referral = await Referral.findById(referralId);
+		if (!referral) {
+			throw new NotFoundError('Referral not found');
+		}
+
+		if (referral.submittedByClerkUserId !== auth.userId) {
+			throw new UnauthorizedError('You can only delete referrals submitted by you');
+		}
+
+		if (['assigned', 'in_progress', 'completed'].includes(referral.referralStatus)) {
+			throw new BadRequestError('Processed referrals cannot be deleted');
+		}
+
+		await Referral.findByIdAndDelete(referralId);
+
+		res.status(200).json({
+			message: 'Referral deleted successfully',
+			referralId,
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+
 // MGR-005: Get referrals submitted by the currently authenticated manager.
 // SECURITY: Manager identity is derived from the Clerk token — no ID in the URL.
 export const getMySubmittedReferrals = async (req: Request, res: Response, next: NextFunction) => {
