@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import {
   Home,
   Users,
@@ -114,10 +114,10 @@ const ManagerDashboardLayout = () => {
                           isActive={isActive(item.url)}
                           className={navItemClass(item.url)}
                         >
-                          <a href={item.url} className="flex items-center gap-3">
+                          <Link to={item.url} className="flex items-center gap-3">
                             <item.icon className="h-5 w-5" />
                             <span className="font-medium">{item.title}</span>
-                          </a>
+                          </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
@@ -139,10 +139,10 @@ const ManagerDashboardLayout = () => {
                           isActive={isActive(item.url)}
                           className={navItemClass(item.url)}
                         >
-                          <a href={item.url} className="flex items-center gap-3">
+                          <Link to={item.url} className="flex items-center gap-3">
                             <item.icon className="h-5 w-5" />
                             <span className="font-medium">{item.title}</span>
-                          </a>
+                          </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
