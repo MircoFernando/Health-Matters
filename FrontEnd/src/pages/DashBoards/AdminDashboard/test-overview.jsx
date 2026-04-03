@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { useMemo } from "react";
 import {
   Activity,
@@ -285,10 +286,10 @@ export const TestOverview = () => {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-base font-semibold text-slate-900">Quick Actions</h2>
             <div className="mt-3 grid gap-2">
-              <a href="/admin/dashboard/analytics" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Analytics & KPI</a>
-              <a href="/admin/dashboard/services" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Service Management</a>
-              <a href="/admin/dashboard/referrals" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Referral Triage</a>
-              <a href="/admin/dashboard/users" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open User Role Console</a>
+              <Link to="/admin/dashboard/analytics" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Analytics & KPI</Link>
+              <Link to="/admin/dashboard/services" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Service Management</Link>
+              <Link to="/admin/dashboard/referrals" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open Referral Triage</Link>
+              <Link to="/admin/dashboard/users" className="rounded-md border border-blue-700 bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Open User Role Console</Link>
             </div>
           </div>
         </div>
